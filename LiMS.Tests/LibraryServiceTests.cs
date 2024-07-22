@@ -232,11 +232,11 @@ namespace LiMS.Tests
             var fakeMemberRepository = new FakeMemberRepository();
 
 
-            var borrowedBook = new Book { BookID = 1, Title = "Borrowed Book", IsBorrowed = true, BorrowedBy = 1, BorrowedDate = DateTime.Now };
+            var borrowedBook = new Book { Title = "Borrowed Book", IsBorrowed = true, BorrowedBy = 1, BorrowedDate = DateTime.Now };
             fakeBookRepository.Add(borrowedBook);
 
 
-            var borrowedBy = new Member { MemberID = 1, Name = "John Doe", Email = "john@example.com" };
+            var borrowedBy = new Member { Name = "John Doe", Email = "john@example.com" };
             fakeMemberRepository.Add(borrowedBy);
 
             var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
