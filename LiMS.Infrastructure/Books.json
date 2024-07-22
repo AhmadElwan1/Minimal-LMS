@@ -1,0 +1,10 @@
+[
+  {
+    "BookID": 1,
+    "Title": "aaaa",
+    "Author": "aaaaa",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  }
+]
