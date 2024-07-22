@@ -22,13 +22,15 @@ namespace LiMS
             bool exit = false;
             while (!exit)
             {
-                Console.WriteLine("\n===== Library Management System =====");
-                Console.WriteLine("1. Manage Books");
-                Console.WriteLine("2. Manage Members");
-                Console.WriteLine("3. Borrow a Book");
-                Console.WriteLine("4. Return a Book");
-                Console.WriteLine("5. View All Borrowed Books");
-                Console.WriteLine("6. Exit");
+                Console.WriteLine(@"
+                    ===== Library Management System =====
+                    1. Manage Books
+                    2. Manage Members
+                    3. Borrow a Book
+                    4. Return a Book
+                    5. View All Borrowed Books
+                    6. Exit
+                    ");
                 Console.Write("Enter your choice: ");
 
                 switch (Console.ReadLine())
