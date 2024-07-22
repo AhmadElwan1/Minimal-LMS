@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -21,7 +21,7 @@
     <ProjectReference Include="..\LiMS.Application\LiMS.Application.csproj" />
     <ProjectReference Include="..\LiMS.Domain\LiMS.Domain.csproj" />
     <ProjectReference Include="..\LiMS.Infrastructure\LiMS.Infrastructure.csproj" />
-    <ProjectReference Include="..\LiMS\LiMS.csproj" />
+    <ProjectReference Include="..\LiMS\LiMS.Interface.csproj" />
   </ItemGroup>
 
   <ItemGroup>

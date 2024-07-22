@@ -4,7 +4,7 @@ using LiMS.Infrastructure;
 using LiMS.Application;
 
 
-namespace LiMS
+namespace LiMS.Interface
 {
     public class Program
     {

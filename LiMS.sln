@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiMS", "LiMS\LiMS.csproj", "{F81359EB-D8E3-49C3-A003-B705CCD58958}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiMS.Interface", "LiMS\LiMS.Interface.csproj", "{F81359EB-D8E3-49C3-A003-B705CCD58958}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiMS.Domain", "LiMS.Domain\LiMS.Domain.csproj", "{F0B87CD7-E7DD-4C56-8C5F-30EB0EB9E843}"
 EndProject
