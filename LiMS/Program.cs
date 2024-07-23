@@ -2,35 +2,30 @@
 using LiMS.Domain;
 using LiMS.Infrastructure;
 using LiMS.Application;
-
+using System.Linq;
 
 namespace LiMS.Interface
 {
     public class Program
     {
-
         private static LibraryService libraryService;
-
-
 
         public static void Main(string[] args)
         {
-
             Initialize();
-
 
             bool exit = false;
             while (!exit)
             {
                 Console.WriteLine(@"
-                    ===== Library Management System =====
-                    1. Manage Books
-                    2. Manage Members
-                    3. Borrow a Book
-                    4. Return a Book
-                    5. View All Borrowed Books
-                    6. Exit
-                    ");
+===== Library Management System =====
+1. Manage Books
+2. Manage Members
+3. Borrow a Book
+4. Return a Book
+5. View All Borrowed Books
+6. Exit
+");
                 Console.Write("Enter your choice: ");
 
                 switch (Console.ReadLine())
@@ -67,8 +62,8 @@ namespace LiMS.Interface
             string booksFile = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\LiMS.Infrastructure\\Books.json";
             string membersFile = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\LiMS.Infrastructure\\Members.json";
 
-            var bookRepository = new BookRepository(booksFile);
-            var memberRepository = new MemberRepository(membersFile);
+            BookRepository bookRepository = new BookRepository(booksFile);
+            MemberRepository memberRepository = new MemberRepository(membersFile);
 
             libraryService = new LibraryService(bookRepository, memberRepository);
         }
@@ -113,10 +108,32 @@ namespace LiMS.Interface
         private static void AddNewBook()
         {
             Console.WriteLine("\nEnter details for the new book:");
-            Console.Write("Title: ");
-            string title = Console.ReadLine();
-            Console.Write("Author: ");
-            string author = Console.ReadLine();
+
+            string title;
+            do
+            {
+                Console.Write("Title: ");
+                title = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    Console.WriteLine("Title cannot be empty. Please enter a valid title.");
+                }
+
+            } while (string.IsNullOrWhiteSpace(title));
+
+            string author;
+            do
+            {
+                Console.Write("Author: ");
+                author = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(author))
+                {
+                    Console.WriteLine("Author cannot be empty. Please enter a valid author.");
+                }
+
+            } while (string.IsNullOrWhiteSpace(author));
 
             Book newBook = new Book
             {
@@ -179,14 +196,12 @@ namespace LiMS.Interface
         private static void ViewAllBooks()
         {
             Console.WriteLine("\n===== All Books =====");
-            foreach (var book in libraryService.GetAllBooks())
+            foreach (Book book in libraryService.GetAllBooks())
             {
                 Console.WriteLine($"ID: {book.BookID}, Title: {book.Title}, Author: {book.Author}, " +
                                   $"Borrowed: {book.IsBorrowed}, Borrowed Date: {book.BorrowedDate}");
             }
         }
-
-
 
         private static void ManageMembers()
         {
@@ -228,10 +243,42 @@ namespace LiMS.Interface
         private static void AddNewMember()
         {
             Console.WriteLine("\nEnter details for the new member:");
-            Console.Write("Name: ");
-            string name = Console.ReadLine();
-            Console.Write("Email: ");
-            string email = Console.ReadLine();
+
+            string name;
+            do
+            {
+                Console.Write("Name: ");
+                name = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    Console.WriteLine("Name cannot be empty. Please enter a valid name.");
+                }
+
+            } while (string.IsNullOrWhiteSpace(name));
+
+            string email = "";
+            bool emailAlreadyExists = false;
+
+            do
+            {
+                Console.Write("Email: ");
+                email = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    Console.WriteLine("Email cannot be empty. Please enter a valid email.");
+                    continue;
+                }
+
+                emailAlreadyExists = libraryService.GetAllMembers().Any(m => m.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+
+                if (emailAlreadyExists)
+                {
+                    Console.WriteLine($"Email '{email}' is already in use. Please enter a different email.");
+                }
+
+            } while (string.IsNullOrWhiteSpace(email) || emailAlreadyExists);
 
             Member newMember = new Member
             {
@@ -263,7 +310,6 @@ namespace LiMS.Interface
                         memberToUpdate.Email = newEmail;
 
                     libraryService.UpdateMember(memberToUpdate);
-                    Console.WriteLine("Member updated successfully!");
                 }
                 else
                 {
@@ -293,7 +339,7 @@ namespace LiMS.Interface
         private static void ViewAllMembers()
         {
             Console.WriteLine("\n===== All Members =====");
-            foreach (var member in libraryService.GetAllMembers())
+            foreach (Member member in libraryService.GetAllMembers())
             {
                 Console.WriteLine($"ID: {member.MemberID}, Name: {member.Name}, Email: {member.Email}");
             }
@@ -308,7 +354,6 @@ namespace LiMS.Interface
                 if (int.TryParse(Console.ReadLine(), out int memberID))
                 {
                     libraryService.BorrowBook(bookID, memberID);
-                    Console.WriteLine("Book borrowed successfully!");
                 }
                 else
                 {
@@ -327,7 +372,6 @@ namespace LiMS.Interface
             if (int.TryParse(Console.ReadLine(), out int bookID))
             {
                 libraryService.ReturnBook(bookID);
-                Console.WriteLine("Book returned successfully!");
             }
             else
             {
@@ -338,8 +382,7 @@ namespace LiMS.Interface
         private static void ViewAllBorrowedBooks()
         {
             Console.WriteLine("\n===== All Borrowed Books =====");
-            var borrowedBooks = libraryService.GetAllBooks().FindAll(b => b.IsBorrowed);
-            foreach (var book in borrowedBooks)
+            foreach (Book book in libraryService.GetAllBooks().FindAll(b => b.IsBorrowed))
             {
                 Console.WriteLine($"Book ID: {book.BookID}, Title: {book.Title}, " +
                                   $"Borrowed by Member ID: {book.BorrowedBy}, Due Date: {book.BorrowedDate}");

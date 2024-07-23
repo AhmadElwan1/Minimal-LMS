@@ -3,6 +3,15 @@ using LiMS.Domain;
 
 namespace LiMS.Tests
 {
+
+    /*
+        Note:
+ 
+            Arrange: The part where we create objects and initialize variables.
+            Act: The part where the actual execution is done.
+            Assert: The part where the verification is done. 
+    */
+
     public class LibraryServiceTests
     {
         private class FakeBookRepository : IRepository<Book>
@@ -81,17 +90,17 @@ namespace LiMS.Tests
         public void AddBook_Should_Add_New_Book()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
-            var newBook = new Book { Title = "New Book", Author = "Author" };
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            Book newBook = new Book { Title = "New Book", Author = "Author" };
 
             // Act
             libraryService.AddBook(newBook);
 
             // Assert
-            var addedBook = fakeBookRepository.GetById(newBook.BookID);
+            Book addedBook = fakeBookRepository.GetById(newBook.BookID);
             Assert.NotNull(addedBook);
             Assert.Equal(newBook.Title, addedBook.Title);
             Assert.Equal(newBook.Author, addedBook.Author);
@@ -101,20 +110,20 @@ namespace LiMS.Tests
         public void UpdateBook_Should_Update_Existing_Book()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var existingBook = new Book { Title = "Existing Book", Author = "Original Author" };
+            Book existingBook = new Book { Title = "Existing Book", Author = "Original Author" };
             fakeBookRepository.Add(existingBook);
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
             existingBook.Author = "New Author";
             libraryService.UpdateBook(existingBook);
 
             // Assert
-            var updatedBook = fakeBookRepository.GetById(existingBook.BookID);
+            Book updatedBook = fakeBookRepository.GetById(existingBook.BookID);
             Assert.Equal("New Author", updatedBook.Author);
         }
 
@@ -122,19 +131,19 @@ namespace LiMS.Tests
         public void DeleteBook_Should_Delete_Existing_Book()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var existingBook = new Book { Title = "Existing Book", Author = "Original Author" };
+            Book existingBook = new Book { Title = "Existing Book", Author = "Original Author" };
             fakeBookRepository.Add(existingBook);
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
             libraryService.DeleteBook(1);
 
             // Assert
-            var deletedBook = fakeBookRepository.GetById(1);
+            Book deletedBook = fakeBookRepository.GetById(1);
             Assert.Null(deletedBook);
         }
 
@@ -142,17 +151,17 @@ namespace LiMS.Tests
         public void AddMember_Should_Add_New_Member()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
-            var newMember = new Member { Name = "New Member", Email = "member@example.com" };
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            Member newMember = new Member { Name = "New Member", Email = "member@example.com" };
 
             // Act
             libraryService.AddMember(newMember);
 
             // Assert
-            var addedMember = fakeMemberRepository.GetById(newMember.MemberID);
+            Member addedMember = fakeMemberRepository.GetById(newMember.MemberID);
             Assert.NotNull(addedMember);
             Assert.Equal(newMember.Name, addedMember.Name);
             Assert.Equal(newMember.Email, addedMember.Email);
@@ -162,20 +171,20 @@ namespace LiMS.Tests
         public void UpdateMember_Should_Update_Existing_Member()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var existingMember = new Member { Name = "Existing Member", Email = "original@example.com" };
+            Member existingMember = new Member { Name = "Existing Member", Email = "original@example.com" };
             fakeMemberRepository.Add(existingMember);
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
             existingMember.Email = "updated@example.com";
             libraryService.UpdateMember(existingMember);
 
             // Assert
-            var updatedMember = fakeMemberRepository.GetById(existingMember.MemberID);
+            Member updatedMember = fakeMemberRepository.GetById(existingMember.MemberID);
             Assert.Equal("updated@example.com", updatedMember.Email);
         }
 
@@ -183,19 +192,19 @@ namespace LiMS.Tests
         public void DeleteMember_Should_Delete_Existing_Member()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var existingMember = new Member { Name = "Existing Member", Email = "original@example.com" };
+            Member existingMember = new Member { Name = "Existing Member", Email = "original@example.com" };
             fakeMemberRepository.Add(existingMember);
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
             libraryService.DeleteMember(1);
 
             // Assert
-            var deletedMember = fakeMemberRepository.GetById(1);
+            Member deletedMember = fakeMemberRepository.GetById(1);
             Assert.Null(deletedMember);
         }
 
@@ -203,22 +212,22 @@ namespace LiMS.Tests
         public void BorrowBook_Should_Borrow_Book()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var book = new Book { Title = "Sample Book", IsBorrowed = false };
-            var member = new Member { Name = "John Doe", Email = "john@example.com" };
+            Book book = new Book { Title = "Sample Book", IsBorrowed = false };
+            Member member = new Member { Name = "John Doe", Email = "john@example.com" };
 
             fakeBookRepository.Add(book);
             fakeMemberRepository.Add(member);
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
             libraryService.BorrowBook(1, 1);
 
             // Assert
-            var borrowedBook = fakeBookRepository.GetById(1);
+            Book borrowedBook = fakeBookRepository.GetById(1);
             Assert.True(borrowedBook.IsBorrowed);
             Assert.Equal(member.MemberID, borrowedBook.BorrowedBy);
             Assert.NotNull(borrowedBook.BorrowedDate);
@@ -228,40 +237,36 @@ namespace LiMS.Tests
         public void ReturnBook_Should_Return_Book()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-
-            var borrowedBook = new Book { Title = "Borrowed Book", IsBorrowed = true, BorrowedBy = 1, BorrowedDate = DateTime.Now };
+            Book borrowedBook = new Book { Title = "Borrowed Book", IsBorrowed = true, BorrowedBy = 1, BorrowedDate = DateTime.Now };
             fakeBookRepository.Add(borrowedBook);
 
-
-            var borrowedBy = new Member { Name = "John Doe", Email = "john@example.com" };
+            Member borrowedBy = new Member { Name = "John Doe", Email = "john@example.com" };
             fakeMemberRepository.Add(borrowedBy);
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
-            libraryService.ReturnBook(1); 
+            libraryService.ReturnBook(1);
 
             // Assert
-            var returnedBook = fakeBookRepository.GetById(1);
+            Book returnedBook = fakeBookRepository.GetById(1);
 
             Assert.False(returnedBook.IsBorrowed);
-            Assert.Null(returnedBook.BorrowedBy); 
+            Assert.Null(returnedBook.BorrowedBy);
             Assert.Null(returnedBook.BorrowedDate);
         }
-
-
 
         [Fact]
         public void GetAllBooks_Should_Return_All_Books()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var books = new List<Book>
+            List<Book> books = new List<Book>
             {
                 new Book { Title = "Book 1", Author = "Author 1" },
                 new Book { Title = "Book 2", Author = "Author 2" }
@@ -272,7 +277,7 @@ namespace LiMS.Tests
                 fakeBookRepository.Add(book);
             }
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
             var allBooks = libraryService.GetAllBooks();
@@ -285,10 +290,10 @@ namespace LiMS.Tests
         public void GetAllMembers_Should_Return_All_Members()
         {
             // Arrange
-            var fakeBookRepository = new FakeBookRepository();
-            var fakeMemberRepository = new FakeMemberRepository();
+            FakeBookRepository fakeBookRepository = new FakeBookRepository();
+            FakeMemberRepository fakeMemberRepository = new FakeMemberRepository();
 
-            var members = new List<Member>
+            List<Member> members = new List<Member>
             {
                 new Member { Name = "John Doe", Email = "john@example.com" },
                 new Member { Name = "Jane Smith", Email = "jane@example.com" }
@@ -299,7 +304,7 @@ namespace LiMS.Tests
                 fakeMemberRepository.Add(member);
             }
 
-            var libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
+            LibraryService libraryService = new LibraryService(fakeBookRepository, fakeMemberRepository);
 
             // Act
             var allMembers = libraryService.GetAllMembers();
