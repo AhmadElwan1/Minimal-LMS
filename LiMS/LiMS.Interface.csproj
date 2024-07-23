@@ -86,20 +86,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LiMS.Application\LiMS.Application.csproj">
-      <Project>{7b9ae2f6-19bd-467c-9919-9e46cefa3488}</Project>
-      <Name>LiMS.Application</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LiMS.Domain\LiMS.Domain.csproj">
-      <Project>{f0b87cd7-e7dd-4c56-8c5f-30eb0eb9e843}</Project>
-      <Name>LiMS.Domain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LiMS.Infrastructure\LiMS.Infrastructure.csproj">
-      <Project>{bad78d0c-eed1-4a70-9162-cbe604be26bf}</Project>
-      <Name>LiMS.Infrastructure</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
@@ -110,6 +96,12 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{1989bd08-7964-483e-b261-87a74956ae54}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,16 +1,15 @@
 ﻿using System;
-using Domain;
-using Infrastructure;
-using Application;
+using LiMS.Application;
+using LiMS.Domain;
+using LiMS.Infrastructure;
 using System.Linq;
 
-namespace LiMS.Interface
+namespace Presentation
 {
-    public class Program
+    internal class Program
     {
         private static LibraryService libraryService;
-
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
             Initialize();
 
