@@ -3,28 +3,20 @@ using LiMS.Domain;
 
 namespace LiMS.Infrastructure
 {
-    public class BookRepository : IRepository<Book>
+    public class BookRepository(string booksFile) : IRepository<Book>
     {
-
-        private readonly string _booksFile;
-
-        public BookRepository(string booksFile)
-        {
-            _booksFile = booksFile;
-        }
-
         public List<Book> GetAll()
         {
-            if (!File.Exists(_booksFile))
-                return new List<Book>();
+            if (!File.Exists(booksFile))
+                return [];
 
-            string booksJson = File.ReadAllText(_booksFile);
+            string booksJson = File.ReadAllText(booksFile);
             return JsonConvert.DeserializeObject<List<Book>>(booksJson);
         }
 
         public Book GetById(int id)
         {
-            return GetAll().Find(b => b.BookID == id);
+            return GetAll().Find(b => b.BookId == id);
         }
 
         public void Add(Book entity)
@@ -37,7 +29,7 @@ namespace LiMS.Infrastructure
         public void Update(Book entity)
         {
             List<Book> books = GetAll();
-            int index = books.FindIndex(b => b.BookID == entity.BookID);
+            int index = books.FindIndex(b => b.BookId == entity.BookId);
             if (index != -1)
             {
                 books[index] = entity;
@@ -48,14 +40,14 @@ namespace LiMS.Infrastructure
         public void Delete(int id)
         {
             List<Book> books = GetAll();
-            books.RemoveAll(b => b.BookID == id);
+            books.RemoveAll(b => b.BookId == id);
             SaveChanges(books);
         }
 
         private void SaveChanges(List<Book> books)
         {
             string booksJson = JsonConvert.SerializeObject(books, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText(_booksFile, booksJson);
+            File.WriteAllText(booksFile, booksJson);
         }
     }
 

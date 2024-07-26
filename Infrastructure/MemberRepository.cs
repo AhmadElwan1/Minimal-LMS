@@ -1,25 +1,16 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using LiMS.Domain;
 
 namespace LiMS.Infrastructure
 {
-    public class MemberRepository : IRepository<Member>
+    public class MemberRepository(string membersFile) : IRepository<Member>
     {
-        private readonly string _membersFile;
-
-        public MemberRepository(string membersFile)
-        {
-            _membersFile = membersFile;
-        }
-
         public List<Member> GetAll()
         {
-            if (!File.Exists(_membersFile))
-                return new List<Member>();
+            if (!File.Exists(membersFile))
+                return [];
 
-            string membersJson = File.ReadAllText(_membersFile);
+            string membersJson = File.ReadAllText(membersFile);
             return JsonConvert.DeserializeObject<List<Member>>(membersJson);
         }
 
@@ -56,7 +47,7 @@ namespace LiMS.Infrastructure
         private void SaveChanges(List<Member> members)
         {
             string membersJson = JsonConvert.SerializeObject(members, Formatting.Indented);
-            File.WriteAllText(_membersFile, membersJson);
+            File.WriteAllText(membersFile, membersJson);
         }
     }
 }

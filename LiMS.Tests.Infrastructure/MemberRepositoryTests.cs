@@ -1,17 +1,16 @@
-﻿using LiMS.Domain;
+﻿using Newtonsoft.Json;
+using LiMS.Domain;
 using LiMS.Infrastructure;
-using Newtonsoft.Json;
 
 namespace LiMS.Tests.Infrastructure
 {
     public class MemberRepositoryTests : IDisposable
     {
-        private readonly string _tempFilePath;
+        private readonly string _tempFilePath = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\LiMS.Tests.Infrastructure\\test_members.json";
         private readonly MemberRepository _memberRepository;
 
         public MemberRepositoryTests()
         {
-            _tempFilePath = Path.GetTempFileName();
             _memberRepository = new MemberRepository(_tempFilePath);
         }
 
@@ -27,7 +26,7 @@ namespace LiMS.Tests.Infrastructure
         public void GetAll_Should_Return_Empty_List_When_File_Not_Found()
         {
             // Arrange
-            File.Delete(_tempFilePath); 
+            File.Delete(_tempFilePath); // Ensure the file does not exist
 
             // Act
             List<Member> actualMembers = _memberRepository.GetAll();
@@ -40,12 +39,12 @@ namespace LiMS.Tests.Infrastructure
         public void GetAll_Should_Return_All_Members()
         {
             // Arrange
-            List<Member> expectedMembers = new List<Member>
-            {
+            List<Member> expectedMembers =
+            [
                 new Member { MemberID = 1, Name = "John Doe", Email = "john@example.com" },
                 new Member { MemberID = 2, Name = "Jane Smith", Email = "jane@example.com" },
                 new Member { MemberID = 3, Name = "Michael Johnson", Email = "michael@example.com" }
-            };
+            ];
 
             SaveMembersToFile(expectedMembers);
 
@@ -66,12 +65,12 @@ namespace LiMS.Tests.Infrastructure
         public void GetById_Should_Return_Correct_Member()
         {
             // Arrange
-            List<Member> members = new List<Member>
-            {
+            List<Member> members =
+            [
                 new Member { MemberID = 1, Name = "John Doe", Email = "john@example.com" },
                 new Member { MemberID = 2, Name = "Jane Smith", Email = "jane@example.com" },
                 new Member { MemberID = 3, Name = "Michael Johnson", Email = "michael@example.com" }
-            };
+            ];
             SaveMembersToFile(members);
 
             // Act
@@ -106,12 +105,12 @@ namespace LiMS.Tests.Infrastructure
         public void Update_Should_Update_Existing_Member()
         {
             // Arrange
-            List<Member> members = new List<Member>
-            {
+            List<Member> members =
+            [
                 new Member { MemberID = 1, Name = "John Doe", Email = "john@example.com" },
                 new Member { MemberID = 2, Name = "Jane Smith", Email = "jane@example.com" },
                 new Member { MemberID = 3, Name = "Michael Johnson", Email = "michael@example.com" }
-            };
+            ];
             SaveMembersToFile(members);
 
             Member updatedMember = new Member { MemberID = 2, Name = "Updated Member", Email = "updated@example.com" };
@@ -130,12 +129,12 @@ namespace LiMS.Tests.Infrastructure
         public void Delete_Should_Delete_Existing_Member()
         {
             // Arrange
-            List<Member> members = new List<Member>
-            {
+            List<Member> members =
+            [
                 new Member { MemberID = 1, Name = "John Doe", Email = "john@example.com" },
                 new Member { MemberID = 2, Name = "Jane Smith", Email = "jane@example.com" },
                 new Member { MemberID = 3, Name = "Michael Johnson", Email = "michael@example.com" }
-            };
+            ];
             SaveMembersToFile(members);
 
             // Act
@@ -147,6 +146,55 @@ namespace LiMS.Tests.Infrastructure
             Assert.DoesNotContain(members.Single(m => m.MemberID == 2), remainingMembers);
         }
 
+        [Fact]
+        public void SaveMembersToFile_Should_Save_Members_Correctly()
+        {
+            // Arrange
+            List<Member> expectedMembers =
+            [
+                new Member { MemberID = 1, Name = "John Doe", Email = "john@example.com" },
+                new Member { MemberID = 2, Name = "Jane Smith", Email = "jane@example.com" },
+                new Member { MemberID = 3, Name = "Michael Johnson", Email = "michael@example.com" }
+            ];
+
+            // Act
+            SaveMembersToFile(expectedMembers);
+
+            // Assert
+            List<Member> actualMembers = GetAllMembersFromFile();
+            Assert.Equal(expectedMembers.Count, actualMembers.Count);
+            foreach (var expectedMember in expectedMembers)
+            {
+                var actualMember = actualMembers.Single(m => m.MemberID == expectedMember.MemberID);
+                Assert.Equal(expectedMember.Name, actualMember.Name);
+                Assert.Equal(expectedMember.Email, actualMember.Email);
+            }
+        }
+        [Fact]
+        public void GetAllMembersFromFile_Should_Deserialize_Members_Correctly()
+        {
+            // Arrange
+            List<Member> expectedMembers =
+            [
+                new Member { MemberID = 1, Name = "John Doe", Email = "john@example.com" },
+                new Member { MemberID = 2, Name = "Jane Smith", Email = "jane@example.com" },
+                new Member { MemberID = 3, Name = "Michael Johnson", Email = "michael@example.com" }
+            ];
+            SaveMembersToFile(expectedMembers);
+
+            // Act
+            List<Member> actualMembers = GetAllMembersFromFile();
+
+            // Assert
+            Assert.Equal(expectedMembers.Count, actualMembers.Count);
+            foreach (var expectedMember in expectedMembers)
+            {
+                var actualMember = actualMembers.Single(m => m.MemberID == expectedMember.MemberID);
+                Assert.Equal(expectedMember.Name, actualMember.Name);
+                Assert.Equal(expectedMember.Email, actualMember.Email);
+            }
+        }
+
         private void SaveMembersToFile(List<Member> members)
         {
             string membersJson = JsonConvert.SerializeObject(members);
@@ -155,11 +203,14 @@ namespace LiMS.Tests.Infrastructure
 
         private List<Member> GetAllMembersFromFile()
         {
-            if (!File.Exists(_tempFilePath))
-                return new List<Member>();
+
 
             string membersJson = File.ReadAllText(_tempFilePath);
             return JsonConvert.DeserializeObject<List<Member>>(membersJson);
         }
     }
+
+    
+
+    
 }

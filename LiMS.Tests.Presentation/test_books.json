@@ -1,0 +1,18 @@
+[
+  {
+    "BookID": 2,
+    "Title": "New Book",
+    "Author": "Author 1",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookID": 1,
+    "Title": "Updated Book",
+    "Author": "Updated Author",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  }
+]

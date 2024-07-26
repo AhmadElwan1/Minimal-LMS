@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace LiMS.Domain
+﻿namespace LiMS.Domain
 {
     public interface IRepository<T>
     {
@@ -8,5 +6,6 @@ namespace LiMS.Domain
         T GetById(int id);
         void Add(T entity);
         void Update(T entity);
-        void Delete(int id);    }
+        void Delete(int id);
+    }
 }

@@ -2,75 +2,65 @@
 
 namespace LiMS.Application
 {
-    public class LibraryService
+    public class LibraryService(IRepository<Book> bookRepository, IRepository<Member> memberRepository)
     {
-
-        private readonly IRepository<Book> _bookRepository;
-        private readonly IRepository<Member> _memberRepository;
-
-        public LibraryService(IRepository<Book> bookRepository, IRepository<Member> memberRepository)
-        {
-            _bookRepository = bookRepository;
-            _memberRepository = memberRepository;
-        }
-
         // Book operations
 
         public void AddBook(Book book)
         {
-            _bookRepository.Add(book);
+            bookRepository.Add(book);
         }
 
         public void UpdateBook(Book book)
         {
-            _bookRepository.Update(book);
+            bookRepository.Update(book);
         }
 
         public void DeleteBook(int bookID)
         {
-            _bookRepository.Delete(bookID);
+            bookRepository.Delete(bookID);
         }
 
         public List<Book> GetAllBooks()
         {
-            return _bookRepository.GetAll();
+            return bookRepository.GetAll();
         }
 
         public Book GetBookById(int bookID)
         {
-            return _bookRepository.GetById(bookID);
+            return bookRepository.GetById(bookID);
         }
 
         // Member operations
 
         public void AddMember(Member member)
         {
-            _memberRepository.Add(member);
+            memberRepository.Add(member);
         }
 
         public void UpdateMember(Member member)
         {
-            _memberRepository.Update(member);
+            memberRepository.Update(member);
         }
 
         public void DeleteMember(int memberID)
         {
-            _memberRepository.Delete(memberID);
+            memberRepository.Delete(memberID);
         }
 
         public List<Member> GetAllMembers()
         {
-            return _memberRepository.GetAll();
+            return memberRepository.GetAll();
         }
 
         public Member GetMemberById(int memberID)
         {
-            return _memberRepository.GetById(memberID);
+            return memberRepository.GetById(memberID);
         }
 
         public void BorrowBook(int bookID, int memberID)
         {
-            Book book = _bookRepository.GetById(bookID);
+            Book book = bookRepository.GetById(bookID);
             if (book == null)
             {
                 Console.WriteLine($"Book with ID {bookID} not found.");
@@ -83,7 +73,7 @@ namespace LiMS.Application
                 return;
             }
 
-            Member member = _memberRepository.GetById(memberID);
+            Member member = memberRepository.GetById(memberID);
             if (member == null)
             {
                 Console.WriteLine($"Member with ID {memberID} not found.");
@@ -94,13 +84,13 @@ namespace LiMS.Application
             book.BorrowedDate = DateTime.Now;
             book.BorrowedBy = memberID;
 
-            _bookRepository.Update(book);
+            bookRepository.Update(book);
             Console.WriteLine($"Book '{book.Title}' borrowed by {member.Name}.");
         }
 
         public void ReturnBook(int bookID)
         {
-            Book book = _bookRepository.GetById(bookID);
+            Book book = bookRepository.GetById(bookID);
             if (book == null)
             {
                 Console.WriteLine($"Book with ID {bookID} not found.");
@@ -117,13 +107,13 @@ namespace LiMS.Application
             book.BorrowedDate = null;
             book.BorrowedBy = null;
 
-            _bookRepository.Update(book);
+            bookRepository.Update(book);
             Console.WriteLine($"Book '{book.Title}' returned successfully.");
         }
 
         public List<Book> GetAllBorrowedBooks()
         {
-            return _bookRepository.GetAll().Where(b => b.IsBorrowed).ToList();
+            return bookRepository.GetAll().Where(b => b.IsBorrowed).ToList();
         }
 
     }

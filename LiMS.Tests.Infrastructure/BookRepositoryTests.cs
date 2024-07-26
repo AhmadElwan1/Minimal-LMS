@@ -6,20 +6,19 @@ namespace LiMS.Tests.Infrastructure
 {
     public class BookRepositoryTests : IDisposable
     {
-        private readonly string _tempFilePath;
+        private readonly string _tempFilePath = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\LiMS.Tests.Infrastructure\\test_books.json";
         private readonly BookRepository _bookRepository;
 
         public BookRepositoryTests()
         {
-            _tempFilePath = Path.GetTempFileName(); // Ensure this generates a valid temporary file path
-            _bookRepository = new BookRepository(_tempFilePath); // Initialize _bookRepository
+            _bookRepository = new BookRepository(_tempFilePath); 
         }
 
         public void Dispose()
         {
             if (File.Exists(_tempFilePath))
             {
-                File.Delete(_tempFilePath); // Clean up temporary file after tests
+                File.Delete(_tempFilePath); 
             }
         }
 
@@ -27,12 +26,12 @@ namespace LiMS.Tests.Infrastructure
         public void GetAll_Should_Return_All_Books()
         {
             // Arrange
-            List<Book> expectedBooks = new List<Book>
-            {
-                new Book { BookID = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookID = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookID = 3, Title = "Book 3", Author = "Author 3" }
-            };
+            List<Book> expectedBooks =
+            [
+                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
+                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
+                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
+            ];
 
             SaveBooksToFile(expectedBooks);
 
@@ -43,7 +42,7 @@ namespace LiMS.Tests.Infrastructure
             Assert.Equal(expectedBooks.Count, actualBooks.Count);
             foreach (var expectedBook in expectedBooks)
             {
-                var actualBook = actualBooks.Single(b => b.BookID == expectedBook.BookID);
+                var actualBook = actualBooks.Single(b => b.BookId == expectedBook.BookId);
                 Assert.Equal(expectedBook.Title, actualBook.Title);
                 Assert.Equal(expectedBook.Author, actualBook.Author);
             }
@@ -66,12 +65,12 @@ namespace LiMS.Tests.Infrastructure
         public void GetById_Should_Return_Correct_Book()
         {
             // Arrange
-            List<Book> books = new List<Book>
-            {
-                new Book { BookID = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookID = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookID = 3, Title = "Book 3", Author = "Author 3" }
-            };
+            List<Book> books =
+            [
+                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
+                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
+                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
+            ];
             SaveBooksToFile(books);
 
             // Act
@@ -79,7 +78,7 @@ namespace LiMS.Tests.Infrastructure
 
             // Assert
             Assert.NotNull(foundBook);
-            Assert.Equal(2, foundBook.BookID);
+            Assert.Equal(2, foundBook.BookId);
             Assert.Equal("Book 2", foundBook.Title);
             Assert.Equal("Author 2", foundBook.Author);
         }
@@ -88,40 +87,52 @@ namespace LiMS.Tests.Infrastructure
         public void Add_Should_Add_New_Book()
         {
             // Arrange
-            Book newBook = new Book { BookID = 4, Title = "New Book", Author = "New Author" };
+            Book newBook = new Book { BookId = 4, Title = "New Book 4", Author = "New Author 4" };
 
             // Act
             _bookRepository.Add(newBook);
 
             // Assert
-            List<Book> books = GetAllBooksFromFile();
-            Book addedBook = books.SingleOrDefault(b => b.BookID == newBook.BookID);
+            List<Book> booksAfterAdd = GetAllBooksFromFile();
 
-            Assert.NotNull(addedBook);
-            Assert.Equal(newBook.Title, addedBook.Title);
-            Assert.Equal(newBook.Author, addedBook.Author);
+            // Verify book is added correctly
+            Assert.NotNull(booksAfterAdd);
+
+            bool bookFound = false;
+            foreach (var book in booksAfterAdd)
+            {
+                if (book.BookId == newBook.BookId &&
+                    book.Title == newBook.Title &&
+                    book.Author == newBook.Author)
+                {
+                    bookFound = true;
+                }
+            }
+
+            Assert.True(bookFound, $"Failed to find {newBook.Title} by {newBook.Author} in the collection.");
         }
+
 
         [Fact]
         public void Update_Should_Update_Existing_Book()
         {
             // Arrange
-            List<Book> books = new List<Book>
-            {
-                new Book { BookID = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookID = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookID = 3, Title = "Book 3", Author = "Author 3" }
-            };
+            List<Book> books =
+            [
+                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
+                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
+                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
+            ];
             SaveBooksToFile(books);
 
-            Book updatedBook = new Book { BookID = 2, Title = "Updated Book", Author = "Updated Author" };
+            Book updatedBook = new Book { BookId = 2, Title = "Updated Book", Author = "Updated Author" };
 
             // Act
             _bookRepository.Update(updatedBook);
 
             // Assert
             List<Book> updatedBooks = GetAllBooksFromFile();
-            Book foundBook = updatedBooks.Single(b => b.BookID == updatedBook.BookID);
+            Book foundBook = updatedBooks.Single(b => b.BookId == updatedBook.BookId);
             Assert.Equal(updatedBook.Title, foundBook.Title);
             Assert.Equal(updatedBook.Author, foundBook.Author);
         }
@@ -130,12 +141,12 @@ namespace LiMS.Tests.Infrastructure
         public void Delete_Should_Delete_Existing_Book()
         {
             // Arrange
-            List<Book> books = new List<Book>
-            {
-                new Book { BookID = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookID = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookID = 3, Title = "Book 3", Author = "Author 3" }
-            };
+            List<Book> books =
+            [
+                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
+                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
+                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
+            ];
             SaveBooksToFile(books);
 
             // Act
@@ -144,7 +155,7 @@ namespace LiMS.Tests.Infrastructure
             // Assert
             List<Book> remainingBooks = GetAllBooksFromFile();
             Assert.Equal(2, remainingBooks.Count);
-            Assert.DoesNotContain(books.Single(b => b.BookID == 2), remainingBooks);
+            Assert.DoesNotContain(books.Single(b => b.BookId == 2), remainingBooks);
         }
 
         private void SaveBooksToFile(List<Book> books)
@@ -155,8 +166,6 @@ namespace LiMS.Tests.Infrastructure
 
         private List<Book> GetAllBooksFromFile()
         {
-            if (!File.Exists(_tempFilePath))
-                return new List<Book>();
 
             string booksJson = File.ReadAllText(_tempFilePath);
             return JsonConvert.DeserializeObject<List<Book>>(booksJson);
