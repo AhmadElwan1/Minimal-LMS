@@ -203,14 +203,8 @@ namespace LiMS.Tests.Infrastructure
 
         private List<Member> GetAllMembersFromFile()
         {
-
-
             string membersJson = File.ReadAllText(_tempFilePath);
             return JsonConvert.DeserializeObject<List<Member>>(membersJson);
         }
     }
-
-    
-
-    
 }

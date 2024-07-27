@@ -166,7 +166,6 @@ namespace LiMS.Tests.Infrastructure
 
         private List<Book> GetAllBooksFromFile()
         {
-
             string booksJson = File.ReadAllText(_tempFilePath);
             return JsonConvert.DeserializeObject<List<Book>>(booksJson);
         }
