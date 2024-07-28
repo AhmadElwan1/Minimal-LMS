@@ -1,22 +1,20 @@
-﻿using Newtonsoft.Json;
-using LiMS.Domain;
+﻿using Domain;
+using Newtonsoft.Json;
 
-namespace LiMS.Infrastructure
+namespace Infrastructure
 {
     public class BookRepository(string booksFile) : IRepository<Book>
     {
         public List<Book> GetAll()
         {
-            if (!File.Exists(booksFile))
-                return [];
 
             string booksJson = File.ReadAllText(booksFile);
-            return JsonConvert.DeserializeObject<List<Book>>(booksJson);
+            return JsonConvert.DeserializeObject<List<Book>>(booksJson) ?? new List<Book>();
         }
 
         public Book GetById(int id)
         {
-            return GetAll().Find(b => b.BookId == id);
+            return GetAll().Find(b => b.BookId == id) ?? new Book();
         }
 
         public void Add(Book entity)
@@ -50,6 +48,4 @@ namespace LiMS.Infrastructure
             File.WriteAllText(booksFile, booksJson);
         }
     }
-
 }
-

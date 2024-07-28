@@ -1,22 +1,21 @@
-﻿using Newtonsoft.Json;
-using LiMS.Domain;
+﻿using Domain;
+using Newtonsoft.Json;
 
-namespace LiMS.Infrastructure
+namespace Infrastructure
 {
+
     public class MemberRepository(string membersFile) : IRepository<Member>
     {
         public List<Member> GetAll()
         {
-            if (!File.Exists(membersFile))
-                return [];
 
             string membersJson = File.ReadAllText(membersFile);
-            return JsonConvert.DeserializeObject<List<Member>>(membersJson);
+            return JsonConvert.DeserializeObject<List<Member>>(membersJson) ?? new List<Member>();
         }
 
         public Member GetById(int id)
         {
-            return GetAll().Find(m => m.MemberID == id);
+            return GetAll().Find(m => m.MemberID == id) ?? new Member();
         }
 
         public void Add(Member entity)
@@ -43,6 +42,7 @@ namespace LiMS.Infrastructure
             members.RemoveAll(m => m.MemberID == id);
             SaveChanges(members);
         }
+
 
         private void SaveChanges(List<Member> members)
         {

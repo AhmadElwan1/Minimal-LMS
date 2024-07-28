@@ -1,92 +1,124 @@
 ﻿using System;
-using Xunit;
 using Moq;
-using LiMS.Application;
-using System.IO;
 using Presentation;
+using Application;
+using Domain;
+using Xunit;
 
 namespace LiMS.Tests.Presentation
 {
     public class ProgramTests
     {
-        [Theory]
-        [InlineData("1")] // Manage Books
-        [InlineData("2")] // Manage Members
-        [InlineData("3")] // Borrow a Book
-        [InlineData("4")] // Return a Book
-        [InlineData("5")] // View All Borrowed Books
-        [InlineData("6")] // Exit
-        public void Run_MenuOption_Selected(string userInput)
+        private readonly Mock<IBookManagement> _mockBookManagement;
+        private readonly Mock<IMemberManagement> _mockMemberManagement;
+        private readonly Mock<IBorrowReturnBooks> _mockBorrowReturnBooks;
+        private readonly Mock<LibraryService> _mockLibraryService;
+        private readonly Program _program;
+
+        public ProgramTests()
         {
+            _mockBookManagement = new Mock<IBookManagement>();
+            _mockMemberManagement = new Mock<IMemberManagement>();
+            _mockBorrowReturnBooks = new Mock<IBorrowReturnBooks>();
+            _mockLibraryService = new Mock<LibraryService>(
+                Mock.Of<IRepository<Book>>(),
+                Mock.Of<IRepository<Member>>()
+            );
 
-            // Arrange
-            var mockLibraryService = new Mock<LibraryService>();
-            var program = new Program(mockLibraryService.Object);
-
-            // Mock Console.ReadLine() to simulate user input
-            var mockConsole = new Mock<IConsole>();
-            mockConsole.Setup(c => c.ReadLine()).Returns(userInput);
-            Console.SetIn(mockConsole.Object.In);
-
-            // Act
-            program.Run();
-
-            // Assert
-            // Verify that corresponding method in each class is called based on user input
-            switch (userInput)
-            {
-                case "1":
-                    mockLibraryService.Verify(s => s.GetAllBooks(), Times.Once);
-                    break;
-                case "2":
-                    mockLibraryService.Verify(s => s.GetAllMembers(), Times.Once);
-                    break;
-                case "3":
-                    mockLibraryService.Verify(s => s.BorrowBook(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
-                    break;
-                case "4":
-                    mockLibraryService.Verify(s => s.ReturnBook(It.IsAny<int>()), Times.Once);
-                    break;
-                case "5":
-                    mockLibraryService.Verify(s => s.GetAllBooks(), Times.Once);
-                    break;
-                case "6":
-                    // Ensure the loop ends and the program exits
-                    break;
-                default:
-                    Assert.True(false, "Invalid user input for testing.");
-                    break;
-            }
+            _program = new Program(
+                _mockBookManagement.Object,
+                _mockMemberManagement.Object,
+                _mockBorrowReturnBooks.Object,
+                _mockLibraryService.Object
+            );
         }
 
         [Fact]
-        public void Run_InvalidInput_ShouldPrintErrorMessage()
+        public void Run_ShouldCallManageBooksWhenOption1IsSelected()
         {
             // Arrange
-            var mockLibraryService = new Mock<LibraryService>();
-            var program = new Program(mockLibraryService.Object);
-
-            var mockConsole = new Mock<IConsole>();
-            mockConsole.SetupSequence(c => c.ReadLine())
-                .Returns("invalid")
-                .Returns("6"); // Exit after invalid input
-            Console.SetIn(mockConsole.Object.In);
+            var input = "1\n6\n"; // Select "Manage Books" then "Exit"
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
 
             // Act
-            program.Run();
+            _program.Run();
 
             // Assert
-            mockConsole.Verify(c => c.WriteLine("Invalid input. Please enter a number from 1 to 6."), Times.Once);
+            _mockBookManagement.Verify(b => b.ManageBooks(_mockLibraryService.Object), Times.Once);
         }
-    }
 
-    // Mock IConsole interface for testing purposes
-    public interface IConsole
-    {
-        string ReadLine();
-        void WriteLine(string value);
-        TextReader In { get; }
-        TextWriter Out { get; }
-        TextWriter Error { get; }
+        [Fact]
+        public void Run_ShouldCallManageMembersWhenOption2IsSelected()
+        {
+            // Arrange
+            var input = "2\n6\n"; // Select "Manage Members" then "Exit"
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _program.Run();
+
+            // Assert
+            _mockMemberManagement.Verify(m => m.ManageMembers(_mockLibraryService.Object), Times.Once);
+        }
+
+        [Fact]
+        public void Run_ShouldCallBorrowBookWhenOption3IsSelected()
+        {
+            // Arrange
+            var input = "3\n6\n"; // Select "Borrow a Book" then "Exit"
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _program.Run();
+
+            // Assert
+            _mockBorrowReturnBooks.Verify(b => b.BorrowBook(_mockLibraryService.Object), Times.Once);
+        }
+
+        [Fact]
+        public void Run_ShouldCallReturnBookWhenOption4IsSelected()
+        {
+            // Arrange
+            var input = "4\n6\n"; // Select "Return a Book" then "Exit"
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _program.Run();
+
+            // Assert
+            _mockBorrowReturnBooks.Verify(b => b.ReturnBook(_mockLibraryService.Object), Times.Once);
+        }
+
+        [Fact]
+        public void Run_ShouldCallViewAllBorrowedBooksWhenOption5IsSelected()
+        {
+            // Arrange
+            var input = "5\n6\n"; // Select "View All Borrowed Books" then "Exit"
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _program.Run();
+
+            // Assert
+            _mockBorrowReturnBooks.Verify(b => b.ViewAllBorrowedBooks(_mockLibraryService.Object), Times.Once);
+        }
+
+        [Fact]
+        public void Run_ShouldExitWhenOption6IsSelected()
+        {
+            // Arrange
+            var input = "6\n"; // Select "Exit"
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act & Assert
+            var exception = Record.Exception(() => _program.Run());
+            Assert.Null(exception); // Ensure no exception is thrown
+        }
     }
 }

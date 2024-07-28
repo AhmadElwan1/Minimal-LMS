@@ -1,11 +1,20 @@
-﻿using LiMS.Application;
-using LiMS.Domain;
+﻿using Application;
+using Domain;
 
 namespace Presentation
 {
-    public static class MemberManagement
+    public interface IMemberManagement
     {
-        public static void ManageMembers(LibraryService libraryService)
+        void ManageMembers(LibraryService libraryService);
+        void AddNewMember(LibraryService libraryService);
+        void UpdateMember(LibraryService libraryService);
+        void DeleteMember(LibraryService libraryService);
+        void ViewAllMembers(LibraryService libraryService);
+    }
+
+    public class MemberManagement : IMemberManagement
+    {
+        public void ManageMembers(LibraryService libraryService)
         {
             bool exit = false;
             while (!exit)
@@ -42,7 +51,7 @@ namespace Presentation
             }
         }
 
-        public static void AddNewMember(LibraryService libraryService)
+        public void AddNewMember(LibraryService libraryService)
         {
             Console.WriteLine("\nEnter details for the new member:");
 
@@ -50,7 +59,7 @@ namespace Presentation
             do
             {
                 Console.Write("Name: ");
-                name = Console.ReadLine();
+                name = Console.ReadLine() ?? "";
 
                 if (string.IsNullOrWhiteSpace(name))
                 {
@@ -65,7 +74,7 @@ namespace Presentation
             do
             {
                 Console.Write("Email: ");
-                email = Console.ReadLine();
+                email = Console.ReadLine() ?? "";
 
                 if (string.IsNullOrWhiteSpace(email))
                 {
@@ -73,7 +82,11 @@ namespace Presentation
                     continue;
                 }
 
-                emailAlreadyExists = libraryService.GetAllMembers().Any(m => m.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+                emailAlreadyExists = libraryService.GetAllMembers().Any(m =>
+                {
+                    if (m.Email is null) return false;
+                    return m.Email.Equals(email, StringComparison.OrdinalIgnoreCase);
+                });
 
                 if (emailAlreadyExists)
                 {
@@ -92,56 +105,70 @@ namespace Presentation
             libraryService.AddMember(newMember);
             Console.WriteLine("Member added successfully!");
         }
-        public static void UpdateMember(LibraryService libraryService)
+
+        public void UpdateMember(LibraryService libraryService)
         {
             Console.Write("\nEnter ID of the member to update: ");
             if (int.TryParse(Console.ReadLine(), out int memberID))
             {
                 Member memberToUpdate = libraryService.GetMemberById(memberID);
-                if (memberToUpdate != null)
-                {
-                    Console.Write("New name (leave blank to keep current): ");
-                    string newName = Console.ReadLine();
-                    Console.Write("New email (leave blank to keep current): ");
-                    string newEmail = Console.ReadLine();
+                Console.Write("New name (leave blank to keep current): ");
+                string newName = Console.ReadLine() ?? "";
+                Console.Write("New email (leave blank to keep current): ");
+                string newEmail = Console.ReadLine() ?? "";
 
-                    if (!string.IsNullOrWhiteSpace(newName))
-                        memberToUpdate.Name = newName;
-                    if (!string.IsNullOrWhiteSpace(newEmail))
-                        memberToUpdate.Email = newEmail;
+                if (!string.IsNullOrWhiteSpace(newName))
+                    memberToUpdate.Name = newName;
+                if (!string.IsNullOrWhiteSpace(newEmail))
+                    memberToUpdate.Email = newEmail;
 
-                    libraryService.UpdateMember(memberToUpdate);
-                }
-                else
-                {
-                    Console.WriteLine("Member not found.");
-                }
+                libraryService.UpdateMember(memberToUpdate);
             }
             else
             {
                 Console.WriteLine("Invalid input. Please enter a valid member ID.");
             }
         }
-        public static void DeleteMember(LibraryService libraryService)
+
+        public void DeleteMember(LibraryService libraryService)
         {
             Console.Write("\nEnter ID of the member to delete: ");
             if (int.TryParse(Console.ReadLine(), out int memberID))
             {
-                libraryService.DeleteMember(memberID);
-                Console.WriteLine("Member deleted successfully!");
+                var member = libraryService.GetMemberById(memberID);
+                if (member != null)
+                {
+                    libraryService.DeleteMember(memberID);
+                    Console.WriteLine("Member deleted successfully!");
+                }
+                else
+                {
+                    Console.WriteLine("Member not found. Please enter a valid member ID.");
+                }
             }
             else
             {
                 Console.WriteLine("Invalid input. Please enter a valid member ID.");
             }
         }
-        public static void ViewAllMembers(LibraryService libraryService)
+
+
+        public void ViewAllMembers(LibraryService libraryService)
         {
+            var members = libraryService.GetAllMembers();
             Console.WriteLine("\n===== All Members =====");
-            foreach (Member member in libraryService.GetAllMembers())
+            if (members == null || !members.Any())
+            {
+                Console.WriteLine("No members found.");
+                return;
+            }
+
+            foreach (var member in members)
             {
                 Console.WriteLine($"ID: {member.MemberID}, Name: {member.Name}, Email: {member.Email}");
             }
         }
+
+
     }
 }

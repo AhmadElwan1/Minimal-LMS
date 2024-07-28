@@ -1,42 +1,57 @@
-﻿using LiMS.Application;
-using LiMS.Infrastructure;
+﻿using Application;
+using Infrastructure;
 
 namespace Presentation
 {
-    public class Program(LibraryService libraryService)
+    public class Program
     {
+        private readonly IBookManagement _bookManagement;
+        private readonly IMemberManagement _memberManagement;
+        private readonly IBorrowReturnBooks _borrowReturnBooks;
+        private readonly LibraryService _libraryService;
+
+        public Program(
+            IBookManagement bookManagement,
+            IMemberManagement memberManagement,
+            IBorrowReturnBooks borrowReturnBooks,
+            LibraryService libraryService)
+        {
+            _bookManagement = bookManagement;
+            _memberManagement = memberManagement;
+            _borrowReturnBooks = borrowReturnBooks;
+            _libraryService = libraryService;
+        }
+
         public void Run()
         {
             bool exit = false;
             while (!exit)
             {
-                Console.WriteLine(@"
-===== Library Management System =====
-1. Manage Books
-2. Manage Members
-3. Borrow a Book
-4. Return a Book
-5. View All Borrowed Books
-6. Exit
-");
+                Console.WriteLine("\n===== Main Menu =====");
+                Console.WriteLine("1. Manage Books");
+                Console.WriteLine("2. Manage Members");
+                Console.WriteLine("3. Borrow a Book");
+                Console.WriteLine("4. Return a Book");
+                Console.WriteLine("5. View All Borrowed Books");
+                Console.WriteLine("6. Exit");
                 Console.Write("Enter your choice: ");
 
                 switch (Console.ReadLine())
                 {
                     case "1":
-                        BookManagement.ManageBooks(libraryService);
+                        _bookManagement.ManageBooks(_libraryService);
                         break;
                     case "2":
-                        MemberManagement.ManageMembers(libraryService);
+                        _memberManagement.ManageMembers(_libraryService);
                         break;
                     case "3":
-                        BorrowReturnBooks.BorrowBook(libraryService);
+                        _borrowReturnBooks.BorrowBook(_libraryService);
                         break;
                     case "4":
-                        BorrowReturnBooks.ReturnBook(libraryService);
+                        _borrowReturnBooks.ReturnBook(_libraryService);
                         break;
                     case "5":
-                        BorrowReturnBooks.ViewAllBorrowedBooks(libraryService);
+                        _borrowReturnBooks.ViewAllBorrowedBooks(_libraryService);
                         break;
                     case "6":
                         exit = true;
@@ -52,11 +67,29 @@ namespace Presentation
 
         public static void Main(string[] args)
         {
-            // Example of using Program with a real LibraryService
+            RunApplication();
+        }
+
+        public static void RunApplication()
+        {
+            // Setup file paths
             string bookFile = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\Infrastructure\\Books.json";
             string memberFile = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\Infrastructure\\Members.json";
-            LibraryService libraryService = new LibraryService(new BookRepository(bookFile), new MemberRepository(memberFile));
-            Program program = new Program(libraryService);
+
+            // Create repositories
+            var bookRepository = new BookRepository(bookFile);
+            var memberRepository = new MemberRepository(memberFile);
+
+            // Create service
+            var libraryService = new LibraryService(bookRepository, memberRepository);
+
+            // Create management instances
+            IBookManagement bookManagement = new BookManagement();
+            IMemberManagement memberManagement = new MemberManagement();
+            IBorrowReturnBooks borrowReturnBooks = new BorrowReturnBooks();
+
+            // Create and run the program
+            var program = new Program(bookManagement, memberManagement, borrowReturnBooks, libraryService);
             program.Run();
         }
     }

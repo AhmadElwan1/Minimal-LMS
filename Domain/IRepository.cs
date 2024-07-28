@@ -1,4 +1,4 @@
-﻿namespace LiMS.Domain
+﻿namespace Domain
 {
     public interface IRepository<T>
     {

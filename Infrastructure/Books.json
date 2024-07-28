@@ -1,6 +1,6 @@
 [
   {
-    "BookID": 1,
+    "BookId": 1,
     "Title": "edd",
     "Author": "ed",
     "IsBorrowed": true,
@@ -8,15 +8,15 @@
     "BorrowedBy": 3
   },
   {
-    "BookID": 2,
+    "BookId": 2,
     "Title": "aaa",
     "Author": "aaa",
-    "IsBorrowed": false,
-    "BorrowedDate": null,
-    "BorrowedBy": null
+    "IsBorrowed": true,
+    "BorrowedDate": "2024-07-28T10:38:52.114748+03:00",
+    "BorrowedBy": 1
   },
   {
-    "BookID": 3,
+    "BookId": 3,
     "Title": "bbb",
     "Author": "bbb",
     "IsBorrowed": false,
@@ -24,7 +24,7 @@
     "BorrowedBy": null
   },
   {
-    "BookID": 4,
+    "BookId": 4,
     "Title": "ccc",
     "Author": "ccc",
     "IsBorrowed": false,
@@ -32,7 +32,7 @@
     "BorrowedBy": null
   },
   {
-    "BookID": 5,
+    "BookId": 5,
     "Title": "ddd",
     "Author": "ddd",
     "IsBorrowed": true,
@@ -40,7 +40,7 @@
     "BorrowedBy": 7
   },
   {
-    "BookID": 6,
+    "BookId": 6,
     "Title": "ee",
     "Author": "ee",
     "IsBorrowed": false,
@@ -48,7 +48,7 @@
     "BorrowedBy": null
   },
   {
-    "BookID": 7,
+    "BookId": 7,
     "Title": "fff",
     "Author": "fff",
     "IsBorrowed": false,
@@ -56,7 +56,7 @@
     "BorrowedBy": null
   },
   {
-    "BookID": 8,
+    "BookId": 8,
     "Title": "ggg",
     "Author": "ggg",
     "IsBorrowed": false,
@@ -64,7 +64,7 @@
     "BorrowedBy": null
   },
   {
-    "BookID": 9,
+    "BookId": 9,
     "Title": "hhh",
     "Author": "hhh",
     "IsBorrowed": false,
@@ -72,9 +72,17 @@
     "BorrowedBy": null
   },
   {
-    "BookID": 10,
+    "BookId": 10,
     "Title": "iii",
     "Author": "iii",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 11,
+    "Title": "X1",
+    "Author": "Y1",
     "IsBorrowed": false,
     "BorrowedDate": null,
     "BorrowedBy": null

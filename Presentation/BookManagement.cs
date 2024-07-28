@@ -1,11 +1,20 @@
-﻿using LiMS.Application;
-using LiMS.Domain;
+﻿using Application;
+using Domain;
 
 namespace Presentation
 {
-    public static class BookManagement
+    public interface IBookManagement
     {
-        public static void ManageBooks(LibraryService libraryService)
+        void ManageBooks(LibraryService libraryService);
+        void AddNewBook(LibraryService libraryService);
+        void UpdateBook(LibraryService libraryService);
+        void DeleteBook(LibraryService libraryService);
+        void ViewAllBooks(LibraryService libraryService);
+    }
+
+    public class BookManagement : IBookManagement
+    {
+        public void ManageBooks(LibraryService libraryService)
         {
             bool exit = false;
             while (!exit)
@@ -42,7 +51,7 @@ namespace Presentation
             }
         }
 
-        public static void AddNewBook(LibraryService libraryService)
+        public void AddNewBook(LibraryService libraryService)
         {
             Console.WriteLine("\nEnter details for the new book:");
 
@@ -50,7 +59,7 @@ namespace Presentation
             do
             {
                 Console.Write("Title: ");
-                title = Console.ReadLine();
+                title = Console.ReadLine() ?? "";
 
                 if (string.IsNullOrWhiteSpace(title))
                 {
@@ -63,7 +72,7 @@ namespace Presentation
             do
             {
                 Console.Write("Author: ");
-                author = Console.ReadLine();
+                author = Console.ReadLine() ?? "";
 
                 if (string.IsNullOrWhiteSpace(author))
                 {
@@ -84,31 +93,31 @@ namespace Presentation
             Console.WriteLine("Book added successfully!");
         }
 
-        public static void UpdateBook(LibraryService libraryService)
+
+        public void UpdateBook(LibraryService libraryService)
         {
             Console.Write("\nEnter ID of the book to update: ");
             if (int.TryParse(Console.ReadLine(), out int bookID))
             {
                 Book bookToUpdate = libraryService.GetBookById(bookID);
-                if (bookToUpdate != null)
-                {
-                    Console.Write("New title (leave blank to keep current): ");
-                    string newTitle = Console.ReadLine();
-                    Console.Write("New author (leave blank to keep current): ");
-                    string newAuthor = Console.ReadLine();
-
-                    if (!string.IsNullOrWhiteSpace(newTitle))
-                        bookToUpdate.Title = newTitle;
-                    if (!string.IsNullOrWhiteSpace(newAuthor))
-                        bookToUpdate.Author = newAuthor;
-
-                    libraryService.UpdateBook(bookToUpdate);
-                    Console.WriteLine("Book updated successfully!");
-                }
-                else
+                if (bookToUpdate == null)
                 {
                     Console.WriteLine("Book not found.");
+                    return;
                 }
+
+                Console.Write("New title (leave blank to keep current): ");
+                string newTitle = Console.ReadLine() ?? "";
+                Console.Write("New author (leave blank to keep current): ");
+                string newAuthor = Console.ReadLine() ?? "";
+
+                if (!string.IsNullOrWhiteSpace(newTitle))
+                    bookToUpdate.Title = newTitle;
+                if (!string.IsNullOrWhiteSpace(newAuthor))
+                    bookToUpdate.Author = newAuthor;
+
+                libraryService.UpdateBook(bookToUpdate);
+                Console.WriteLine("Book updated successfully!");
             }
             else
             {
@@ -116,7 +125,8 @@ namespace Presentation
             }
         }
 
-        public static void DeleteBook(LibraryService libraryService)
+
+        public void DeleteBook(LibraryService libraryService)
         {
             Console.Write("\nEnter ID of the book to delete: ");
             if (int.TryParse(Console.ReadLine(), out int bookID))
@@ -130,7 +140,8 @@ namespace Presentation
             }
         }
 
-        public static void ViewAllBooks(LibraryService libraryService)
+
+        public void ViewAllBooks(LibraryService libraryService)
         {
             Console.WriteLine("\n===== All Books =====");
             foreach (Book book in libraryService.GetAllBooks())

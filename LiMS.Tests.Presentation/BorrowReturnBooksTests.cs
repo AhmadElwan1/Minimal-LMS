@@ -1,89 +1,161 @@
-﻿using System;
-using Xunit;
+﻿using Application;
+using Domain;
 using Moq;
-using LiMS.Application;
-using LiMS.Domain;
-using System.Collections.Generic;
 using Presentation;
+using System;
+using System.Collections.Generic;
+using Xunit;
 
 namespace LiMS.Tests.Presentation
 {
+
     public class BorrowReturnBooksTests
     {
-        private readonly Mock<IConsole> _mockConsole = new();
+        private readonly Mock<LibraryService> _mockLibraryService;
+        private readonly BorrowReturnBooks _borrowReturnBooks;
 
-        [Fact]
-        public void BorrowBook_ValidInput_ShouldBorrowBook()
+        public BorrowReturnBooksTests()
         {
-            // Arrange
-            var mockLibraryService = new Mock<LibraryService>();
-            var program = new Program(mockLibraryService.Object);
-
-            var bookId = 1;
-            var memberId = 1;
-
-            mockLibraryService.Setup(s => s.BorrowBook(bookId, memberId));
-
-            _mockConsole.SetupSequence(c => c.ReadLine())
-                .Returns(bookId.ToString())  // Book ID
-                .Returns(memberId.ToString())  // Member ID
-                .Returns("5"); // Exit after borrowing book
-            Console.SetIn(_mockConsole.Object.In);
-
-            // Act
-            BorrowReturnBooks.BorrowBook(mockLibraryService.Object);
-
-            // Assert
-            mockLibraryService.Verify(s => s.BorrowBook(bookId, memberId), Times.Once);
+            _mockLibraryService = new Mock<LibraryService>(
+                Mock.Of<IRepository<Book>>(),
+                Mock.Of<IRepository<Member>>()
+            );
+            _borrowReturnBooks = new BorrowReturnBooks();
         }
 
         [Fact]
-        public void ReturnBook_ValidInput_ShouldReturnBook()
+        public void BorrowBook_ShouldBorrowBookSuccessfully()
         {
             // Arrange
-            var mockLibraryService = new Mock<LibraryService>();
-            var program = new Program(mockLibraryService.Object);
-
-            var bookId = 1;
-
-            mockLibraryService.Setup(s => s.ReturnBook(bookId));
-
-            _mockConsole.SetupSequence(c => c.ReadLine())
-                .Returns(bookId.ToString())  // Book ID
-                .Returns("5"); // Exit after returning book
-            Console.SetIn(_mockConsole.Object.In);
+            var input = "1\n1\n";
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
 
             // Act
-            BorrowReturnBooks.ReturnBook(mockLibraryService.Object);
+            _borrowReturnBooks.BorrowBook(_mockLibraryService.Object);
 
             // Assert
-            mockLibraryService.Verify(s => s.ReturnBook(bookId), Times.Once);
+            _mockLibraryService.Verify(l => l.BorrowBook(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public void ReturnBook_ShouldReturnBookSuccessfully()
+        {
+            // Arrange
+            int bookID = 1;
+            var input = $"{bookID}\n"; // Mock user input for book ID
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _borrowReturnBooks.ReturnBook(_mockLibraryService.Object);
+
+            // Assert
+            _mockLibraryService.Verify(l => l.ReturnBook(bookID), Times.Once);
+        }
+
+        [Fact]
+        public void ReturnBook_ShouldHandleInvalidBookId()
+        {
+            // Arrange
+            var input = "invalid\n"; // Mock user input for invalid book ID
+
+            // Setup to capture console output
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _borrowReturnBooks.ReturnBook(_mockLibraryService.Object);
+
+            // Assert
+            // Verify that ReturnBook method on LibraryService was not called
+            _mockLibraryService.Verify(l => l.ReturnBook(It.IsAny<int>()), Times.Never);
+
+            // Verify console output
+            string output = stringWriter.ToString().Trim();
+            Assert.Contains("Invalid book ID. Returning failed.", output);
+        }
+
+
+        [Fact]
+        public void BorrowBook_ShouldHandleInvalidBookId()
+        {
+            // Arrange
+            var input = "invalid\n1\n"; // Mock user input for invalid book ID
+
+            // Setup to capture console output
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _borrowReturnBooks.BorrowBook(_mockLibraryService.Object);
+
+            // Assert
+            // Verify that BorrowBook method on LibraryService was not called
+            _mockLibraryService.Verify(l => l.BorrowBook(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+
+            // Verify console output
+            string output = stringWriter.ToString().Trim();
+            Assert.Contains("Invalid book ID. Borrowing failed.", output);
+        }
+
+        [Fact]
+        public void BorrowBook_ShouldHandleInvalidMemberId()
+        {
+            // Arrange
+            var input = "1\ninvalid\n"; // Mock user input for invalid member ID
+
+            // Setup to capture console output
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Act
+            _borrowReturnBooks.BorrowBook(_mockLibraryService.Object);
+
+            // Assert
+            // Verify that BorrowBook method on LibraryService was not called
+            _mockLibraryService.Verify(l => l.BorrowBook(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+
+            // Verify console output
+            string output = stringWriter.ToString().Trim();
+            Assert.Contains("Invalid member ID. Borrowing failed.", output);
         }
 
         [Fact]
         public void ViewAllBorrowedBooks_ShouldDisplayAllBorrowedBooks()
         {
             // Arrange
-            var mockLibraryService = new Mock<LibraryService>();
-            var program = new Program(mockLibraryService.Object);
-
-            var borrowedBooks = new List<Book>
+            var books = new List<Book>
             {
-                new() { BookId = 1, Title = "Book 1", IsBorrowed = true, BorrowedBy = 1, BorrowedDate = DateTime.Now },
-                new() { BookId = 2, Title = "Book 2", IsBorrowed = true, BorrowedBy = 2, BorrowedDate = DateTime.Now }
+                new Book { BookId = 1, Title = "Book 1", IsBorrowed = true, BorrowedBy = 1, BorrowedDate = DateTime.Now },
+                new Book { BookId = 2, Title = "Book 2", IsBorrowed = false, BorrowedBy = 0, BorrowedDate = default },
+                new Book { BookId = 3, Title = "Book 3", IsBorrowed = true, BorrowedBy = 2, BorrowedDate = DateTime.Now }
             };
 
-            mockLibraryService.Setup(s => s.GetAllBooks()).Returns(borrowedBooks);
+            _mockLibraryService.Setup(l => l.GetAllBooks()).Returns(books);
 
-            _mockConsole.Setup(c => c.WriteLine(It.IsAny<string>()));
-
-            Console.SetOut(_mockConsole.Object.Out);
+            // Setup to capture console output
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
 
             // Act
-            BorrowReturnBooks.ViewAllBorrowedBooks(mockLibraryService.Object);
+            _borrowReturnBooks.ViewAllBorrowedBooks(_mockLibraryService.Object);
 
             // Assert
-            _mockConsole.Verify(c => c.WriteLine(It.IsAny<string>()), Times.Exactly(borrowedBooks.Count));
+            string output = stringWriter.ToString().Trim();
+            Assert.Contains("===== All Borrowed Books =====", output);
+            Assert.Contains("Book ID: 1, Title: Book 1, Borrowed by Member ID: 1", output);
+            Assert.Contains("Book ID: 3, Title: Book 3, Borrowed by Member ID: 2", output);
+            Assert.DoesNotContain("Book ID: 2, Title: Book 2", output); // Ensure non-borrowed books are not listed
         }
+
+        // Test for ViewAllBorrowedBooks...
     }
+
 }

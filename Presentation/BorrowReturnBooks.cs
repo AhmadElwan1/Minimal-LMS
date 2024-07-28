@@ -1,11 +1,18 @@
-﻿using LiMS.Application;
-using LiMS.Domain;
+﻿using Application;
+using Domain;
 
 namespace Presentation
 {
-    public static class BorrowReturnBooks
+    public interface IBorrowReturnBooks
     {
-        public static void BorrowBook(LibraryService libraryService)
+        void BorrowBook(LibraryService libraryService);
+        void ReturnBook(LibraryService libraryService);
+        void ViewAllBorrowedBooks(LibraryService libraryService);
+    }
+
+    public class BorrowReturnBooks : IBorrowReturnBooks
+    {
+        public void BorrowBook(LibraryService libraryService)
         {
             Console.Write("\nEnter ID of the book to borrow: ");
             if (int.TryParse(Console.ReadLine(), out int bookID))
@@ -26,7 +33,7 @@ namespace Presentation
             }
         }
 
-        public static void ReturnBook(LibraryService libraryService)
+        public void ReturnBook(LibraryService libraryService)
         {
             Console.Write("\nEnter ID of the book to return: ");
             if (int.TryParse(Console.ReadLine(), out int bookID))
@@ -39,7 +46,7 @@ namespace Presentation
             }
         }
 
-        public static void ViewAllBorrowedBooks(LibraryService libraryService)
+        public void ViewAllBorrowedBooks(LibraryService libraryService)
         {
             Console.WriteLine("\n===== All Borrowed Books =====");
             foreach (Book book in libraryService.GetAllBooks().FindAll(b => b.IsBorrowed))

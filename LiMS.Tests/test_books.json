@@ -1,1 +1,394 @@
-[]
+[
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Updated Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 5,
+    "Title": "Test",
+    "Author": "Test",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Test Book",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  },
+  {
+    "BookId": 1,
+    "Title": "Initial Title",
+    "Author": null,
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
+  }
+]

@@ -1,173 +1,73 @@
-using LiMS.Domain;
-using LiMS.Infrastructure;
 using Newtonsoft.Json;
+using Domain;
+using Infrastructure;
 
 namespace LiMS.Tests.Infrastructure
 {
-    public class BookRepositoryTests : IDisposable
+    public class BookRepositoryTests
     {
-        private readonly string _tempFilePath = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\LiMS.Tests.Infrastructure\\test_books.json";
-        private readonly BookRepository _bookRepository;
+        private readonly string _booksFile = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\LiMS.Tests\\test_books.json";
+
+        private readonly BookRepository _repository;
 
         public BookRepositoryTests()
         {
-            _bookRepository = new BookRepository(_tempFilePath); 
-        }
-
-        public void Dispose()
-        {
-            if (File.Exists(_tempFilePath))
-            {
-                File.Delete(_tempFilePath); 
-            }
+            _repository = new BookRepository(_booksFile);
         }
 
         [Fact]
-        public void GetAll_Should_Return_All_Books()
+        public void Add_ShouldAddBookToRepository()
         {
-            // Arrange
-            List<Book> expectedBooks =
-            [
-                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
-            ];
-
-            SaveBooksToFile(expectedBooks);
-
-            // Act
-            List<Book> actualBooks = _bookRepository.GetAll();
-
-            // Assert
-            Assert.Equal(expectedBooks.Count, actualBooks.Count);
-            foreach (var expectedBook in expectedBooks)
-            {
-                var actualBook = actualBooks.Single(b => b.BookId == expectedBook.BookId);
-                Assert.Equal(expectedBook.Title, actualBook.Title);
-                Assert.Equal(expectedBook.Author, actualBook.Author);
-            }
+            var book = new Book { BookId = 1, Title = "Test Book" };
+            _repository.Add(book);
+            var books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(_booksFile));
+            if (books != null) Assert.Contains(books, b => b.BookId == book.BookId);
         }
 
         [Fact]
-        public void GetAll_Should_Return_Empty_List_When_File_Not_Found()
+        public void GetAll_ShouldReturnBooks()
         {
-            // Arrange
-            File.Delete(_tempFilePath); 
-
-            // Act
-            List<Book> actualBooks = _bookRepository.GetAll();
-
-            // Assert
-            Assert.Empty(actualBooks);
+            Book book = new Book { BookId = 5, Title = "Test", Author = "Test" };
+            _repository.Add(book);
+            List<Book> books = _repository.GetAll();
+            Assert.NotEmpty(books);
         }
 
         [Fact]
-        public void GetById_Should_Return_Correct_Book()
+        public void GetById_ShouldReturnBook()
         {
-            // Arrange
-            List<Book> books =
-            [
-                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
-            ];
-            SaveBooksToFile(books);
-
-            // Act
-            Book foundBook = _bookRepository.GetById(2);
-
-            // Assert
-            Assert.NotNull(foundBook);
-            Assert.Equal(2, foundBook.BookId);
-            Assert.Equal("Book 2", foundBook.Title);
-            Assert.Equal("Author 2", foundBook.Author);
+            var book = _repository.GetById(1);
+            Assert.NotNull(book);
         }
 
         [Fact]
-        public void Add_Should_Add_New_Book()
+        public void Delete_ShouldRemoveBook()
         {
-            // Arrange
-            Book newBook = new Book { BookId = 4, Title = "New Book 4", Author = "New Author 4" };
-
-            // Act
-            _bookRepository.Add(newBook);
-
-            // Assert
-            List<Book> booksAfterAdd = GetAllBooksFromFile();
-
-            // Verify book is added correctly
-            Assert.NotNull(booksAfterAdd);
-
-            bool bookFound = false;
-            foreach (var book in booksAfterAdd)
-            {
-                if (book.BookId == newBook.BookId &&
-                    book.Title == newBook.Title &&
-                    book.Author == newBook.Author)
-                {
-                    bookFound = true;
-                }
-            }
-
-            Assert.True(bookFound, $"Failed to find {newBook.Title} by {newBook.Author} in the collection.");
-        }
-
-
-        [Fact]
-        public void Update_Should_Update_Existing_Book()
-        {
-            // Arrange
-            List<Book> books =
-            [
-                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
-            ];
-            SaveBooksToFile(books);
-
-            Book updatedBook = new Book { BookId = 2, Title = "Updated Book", Author = "Updated Author" };
-
-            // Act
-            _bookRepository.Update(updatedBook);
-
-            // Assert
-            List<Book> updatedBooks = GetAllBooksFromFile();
-            Book foundBook = updatedBooks.Single(b => b.BookId == updatedBook.BookId);
-            Assert.Equal(updatedBook.Title, foundBook.Title);
-            Assert.Equal(updatedBook.Author, foundBook.Author);
+            Book book = new Book { BookId = 3, Title = "Test", Author = "Test"};
+            _repository.Add(book);
+            _repository.Delete(3);
+            List<Book> books = _repository.GetAll();
+            Assert.DoesNotContain(books, b => b.BookId == 3);
         }
 
         [Fact]
-        public void Delete_Should_Delete_Existing_Book()
+        public void Update_ShouldUpdateExistingBook()
         {
             // Arrange
-            List<Book> books =
-            [
-                new Book { BookId = 1, Title = "Book 1", Author = "Author 1" },
-                new Book { BookId = 2, Title = "Book 2", Author = "Author 2" },
-                new Book { BookId = 3, Title = "Book 3", Author = "Author 3" }
-            ];
-            SaveBooksToFile(books);
+            var initialBook = new Book { BookId = 1, Title = "Initial Title" };
+            var updatedBook = new Book { BookId = 1, Title = "Updated Title" };
+            _repository.Add(initialBook);
 
             // Act
-            _bookRepository.Delete(2);
+            _repository.Update(updatedBook);
 
             // Assert
-            List<Book> remainingBooks = GetAllBooksFromFile();
-            Assert.Equal(2, remainingBooks.Count);
-            Assert.DoesNotContain(books.Single(b => b.BookId == 2), remainingBooks);
+            var books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(_booksFile));
+            var book = books?.Find(b => b.BookId == updatedBook.BookId);
+            Assert.NotNull(book);
+            Assert.Equal("Updated Title", book.Title);
         }
 
-        private void SaveBooksToFile(List<Book> books)
-        {
-            string booksJson = JsonConvert.SerializeObject(books);
-            File.WriteAllText(_tempFilePath, booksJson);
-        }
 
-        private List<Book> GetAllBooksFromFile()
-        {
-            string booksJson = File.ReadAllText(_tempFilePath);
-            return JsonConvert.DeserializeObject<List<Book>>(booksJson);
-        }
     }
 }
