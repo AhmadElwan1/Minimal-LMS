@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiMS.API", "LiMS.API\LiMS.A
 		{5E68C5FF-BD56-4BA7-BBC5-BACB80456A9B} = {5E68C5FF-BD56-4BA7-BBC5-BACB80456A9B}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{4BC95E87-ED39-4A87-A925-98375689EFAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
