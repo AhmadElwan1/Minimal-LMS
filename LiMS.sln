@@ -21,6 +21,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4C326AC1-63A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8F8B365A-82C2-4B10-BF57-39E140626BA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiMS.API", "LiMS.API\LiMS.API.csproj", "{03D944CA-3E8B-41E7-8938-C5729C86A126}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5E68C5FF-BD56-4BA7-BBC5-BACB80456A9B} = {5E68C5FF-BD56-4BA7-BBC5-BACB80456A9B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +60,10 @@ Global
 		{06D8BA4F-D015-4929-8422-2167DE259BC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06D8BA4F-D015-4929-8422-2167DE259BC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06D8BA4F-D015-4929-8422-2167DE259BC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03D944CA-3E8B-41E7-8938-C5729C86A126}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03D944CA-3E8B-41E7-8938-C5729C86A126}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03D944CA-3E8B-41E7-8938-C5729C86A126}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03D944CA-3E8B-41E7-8938-C5729C86A126}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

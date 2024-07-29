@@ -1,0 +1,10 @@
+[
+  {
+    "BookId": 20,
+    "Title": "karam",
+    "Author": "Bataineh",
+    "IsBorrowed": false,
+    "BorrowedDate": "2024-07-29T14:22:30.022Z",
+    "BorrowedBy": 0
+  }
+]
