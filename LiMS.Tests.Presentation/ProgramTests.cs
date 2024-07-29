@@ -4,6 +4,7 @@ using Presentation;
 using Application;
 using Domain;
 using Xunit;
+using System.IO;
 
 namespace LiMS.Tests.Presentation
 {
@@ -119,6 +120,29 @@ namespace LiMS.Tests.Presentation
             // Act & Assert
             var exception = Record.Exception(() => _program.Run());
             Assert.Null(exception); // Ensure no exception is thrown
+        }
+
+        [Fact]
+        public void Run_ShouldHandleInvalidInputGracefully()
+        {
+            // Arrange
+            var input = "99\n1\n6\n"; // Select invalid option "99", then "Manage Books", then "Exit"
+            var stringReader = new System.IO.StringReader(input);
+            Console.SetIn(stringReader);
+
+            // Redirect Console.Out to a StringWriter to capture the output
+            using (var stringWriter = new StringWriter())
+            {
+                Console.SetOut(stringWriter);
+
+                // Act
+                _program.Run();
+
+                // Assert
+                var output = stringWriter.ToString();
+                Assert.Contains("Invalid input. Please enter a number from 1 to 6.", output);
+                Assert.Contains("Data saved. Goodbye!", output);
+            }
         }
     }
 }

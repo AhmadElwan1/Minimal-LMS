@@ -1,24 +1,28 @@
 ﻿using Application;
-using Domain;
 using Moq;
 using Presentation;
 using System;
 using System.Collections.Generic;
+using Domain;
 using Xunit;
 
 namespace LiMS.Tests.Presentation
 {
     public class MemberManagementTests
     {
-        private readonly Mock<LibraryService> _mockLibraryService;
+        private readonly Mock<IRepository<Member>> _mockMemberRepo;
+        private readonly Mock<IRepository<Book>> _mockBookRepo;
+        private readonly LibraryService _libraryService;
         private readonly MemberManagement _memberManagement;
 
         public MemberManagementTests()
         {
-            _mockLibraryService = new Mock<LibraryService>(
-                Mock.Of<IRepository<Book>>(),
-                Mock.Of<IRepository<Member>>()
-            );
+            // Create mocks for repositories
+            _mockMemberRepo = new Mock<IRepository<Member>>();
+            _mockBookRepo = new Mock<IRepository<Book>>();
+
+            // Instantiate LibraryService with mocked repositories
+            _libraryService = new LibraryService(_mockBookRepo.Object, _mockMemberRepo.Object);
             _memberManagement = new MemberManagement();
         }
 
@@ -26,39 +30,40 @@ namespace LiMS.Tests.Presentation
         public void AddNewMember_ShouldAddMemberSuccessfully()
         {
             // Arrange
-            _mockLibraryService.Setup(l => l.GetAllMembers()).Returns(new List<Member>());
-
+            _mockMemberRepo.Setup(r => r.GetAll()).Returns(new List<Member>());
             var input = "Name\nEmail\n";
             var stringReader = new System.IO.StringReader(input);
             Console.SetIn(stringReader);
 
             // Act
-            _memberManagement.AddNewMember(_mockLibraryService.Object);
+            _memberManagement.AddNewMember(_libraryService);
 
             // Assert
-            _mockLibraryService.Verify(l => l.AddMember(It.IsAny<Member>()), Times.Once);
+            _mockMemberRepo.Verify(r => r.Add(It.IsAny<Member>()), Times.Once);
         }
 
         [Theory]
         [InlineData("\nEmail\n", "Name cannot be empty. Please enter a valid name.")]
         [InlineData("Name\n\n", "Email cannot be empty. Please enter a valid email.")]
-        [InlineData("Name\nduplicate@example.com\n",
-            "Email 'duplicate@example.com' is already in use. Please enter a different email.")]
+        [InlineData("Name\nduplicate@example.com\n", "Email 'duplicate@example.com' is already in use. Please enter a different email.")]
+        [InlineData("Name\nunique@example.com\n", "Member added successfully!")] // Valid case
         public void AddNewMember_ShouldHandleVariousInputs(string input, string expectedMessage)
         {
             // Arrange
             var existingMember = new Member { MemberID = 1, Name = "Existing Member", Email = "duplicate@example.com" };
-            _mockLibraryService.Setup(l => l.GetAllMembers()).Returns(new List<Member> { existingMember });
+            var members = new List<Member> { existingMember };
+
+            // Setup the mock repository to return existing members
+            _mockMemberRepo.Setup(r => r.GetAll()).Returns(members);
 
             var stringReader = new System.IO.StringReader(input);
             Console.SetIn(stringReader);
 
-            // Setup to capture console output
             var stringWriter = new System.IO.StringWriter();
             Console.SetOut(stringWriter);
 
             // Act
-            _memberManagement.AddNewMember(_mockLibraryService.Object);
+            _memberManagement.AddNewMember(_libraryService);
 
             // Assert
             var output = stringWriter.ToString().Trim();
@@ -67,9 +72,18 @@ namespace LiMS.Tests.Presentation
             // Verify that AddMember was not called for invalid cases
             if (expectedMessage != "Member added successfully!")
             {
-                _mockLibraryService.Verify(l => l.AddMember(It.IsAny<Member>()), Times.Never);
+                _mockMemberRepo.Verify(r => r.Add(It.IsAny<Member>()), Times.Never);
+            }
+            else
+            {
+                // Verify that AddMember was called when the case is valid
+                _mockMemberRepo.Verify(r => r.Add(It.Is<Member>(m =>
+                    m.Name == "Name" &&
+                    m.Email == "unique@example.com"
+                )), Times.Once);
             }
         }
+
 
         [Theory]
         [InlineData("1\nNew Name\nNew Email\n", 1, "New Name", "New Email", true)] // Update all details
@@ -85,25 +99,25 @@ namespace LiMS.Tests.Presentation
             var originalMember = memberId.HasValue
                 ? new Member { MemberID = memberId.Value, Name = "Old Name", Email = "Old Email" }
                 : null;
-            _mockLibraryService.Setup(l => l.GetMemberById(memberId.GetValueOrDefault())).Returns(originalMember);
+            _mockMemberRepo.Setup(r => r.GetById(memberId.GetValueOrDefault())).Returns(originalMember);
 
             var stringReader = new System.IO.StringReader(input);
             Console.SetIn(stringReader);
 
-            // Setup to capture console output
             var stringWriter = new System.IO.StringWriter();
             Console.SetOut(stringWriter);
 
             // Act
-            _memberManagement.UpdateMember(_mockLibraryService.Object);
+            _memberManagement.UpdateMember(_libraryService);
 
             // Assert
+            var output = stringWriter.ToString().Trim();
             if (shouldUpdate)
             {
                 // Verify that UpdateMember was called with the correct member details
                 if (originalMember != null)
                 {
-                    _mockLibraryService.Verify(l => l.UpdateMember(It.Is<Member>(m =>
+                    _mockMemberRepo.Verify(r => r.Update(It.Is<Member>(m =>
                         m.MemberID == memberId &&
                         m.Name == (expectedName ?? originalMember.Name) &&
                         m.Email == (expectedEmail ?? originalMember.Email)
@@ -113,19 +127,17 @@ namespace LiMS.Tests.Presentation
             else
             {
                 // Verify that UpdateMember was not called for invalid cases
-                _mockLibraryService.Verify(l => l.UpdateMember(It.IsAny<Member>()), Times.Never);
+                _mockMemberRepo.Verify(r => r.Update(It.IsAny<Member>()), Times.Never);
 
-                // Check for the expected error message
-                if (memberId == null || !memberId.HasValue || memberId.Value == 2)
+                if (!memberId.HasValue)
                 {
-                    Assert.Contains("Invalid input. Please enter a valid member ID.", stringWriter.ToString());
+                    Assert.Contains("Invalid input. Please enter a valid member ID.", output);
                 }
-                else if (memberId.Value != 1)
+                else
                 {
-                    Assert.Contains("ID not found.", stringWriter.ToString());
+                    Assert.Contains("Member not found. Please enter a valid member ID.", output);
                 }
             }
-
         }
 
         [Theory]
@@ -140,59 +152,53 @@ namespace LiMS.Tests.Presentation
                 // Simulate that the member exists or does not exist
                 if (shouldDelete)
                 {
-                    // Simulate that the member exists
-                    _mockLibraryService.Setup(l => l.GetMemberById(memberId.Value)).Returns(new Member { MemberID = memberId.Value });
+                    _mockMemberRepo.Setup(r => r.GetById(memberId.Value)).Returns(new Member { MemberID = memberId.Value });
                 }
                 else
                 {
-                    // Simulate that the member does not exist
-                    _mockLibraryService.Setup(l => l.GetMemberById(memberId.Value)).Returns((Member)null);
+                    _mockMemberRepo.Setup(r => r.GetById(memberId.Value)).Returns((Member)null);
                 }
             }
             else
             {
-                // Simulate invalid ID input
-                _mockLibraryService.Setup(l => l.GetMemberById(It.IsAny<int>())).Returns((Member)null);
+                _mockMemberRepo.Setup(r => r.GetById(It.IsAny<int>())).Returns((Member)null);
             }
 
-            // Set up DeleteMember behavior
             if (shouldDelete)
             {
-                _mockLibraryService.Setup(l => l.DeleteMember(memberId.Value));
+                _mockMemberRepo.Setup(r => r.Delete(It.Is<int>(id => id == memberId.Value)));
             }
             else
             {
-                _mockLibraryService.Setup(l => l.DeleteMember(It.IsAny<int>())).Verifiable(); // Setup but will not verify the call
+                _mockMemberRepo.Setup(r => r.Delete(It.IsAny<int>())).Verifiable(); // Setup but will not verify the call
             }
 
             var stringReader = new System.IO.StringReader(input);
             Console.SetIn(stringReader);
 
-            // Setup to capture console output
             var stringWriter = new System.IO.StringWriter();
             Console.SetOut(stringWriter);
 
             // Act
-            _memberManagement.DeleteMember(_mockLibraryService.Object);
+            _memberManagement.DeleteMember(_libraryService);
 
             // Assert
+            var output = stringWriter.ToString().Trim();
             if (shouldDelete)
             {
-                // Verify that DeleteMember was called with the correct member ID
-                _mockLibraryService.Verify(l => l.DeleteMember(It.Is<int>(id => id == memberId)), Times.Once);
-                Assert.Contains("Member deleted successfully!", stringWriter.ToString());
+                _mockMemberRepo.Verify(r => r.Delete(It.Is<int>(id => id == memberId.Value)), Times.Once);
+                Assert.Contains("Member deleted successfully!", output);
             }
             else
             {
-                // Verify that DeleteMember was not called for invalid cases or not found cases
-                _mockLibraryService.Verify(l => l.DeleteMember(It.IsAny<int>()), Times.Never);
+                _mockMemberRepo.Verify(r => r.Delete(It.IsAny<int>()), Times.Never);
                 if (memberId == null)
                 {
-                    Assert.Contains("Invalid input. Please enter a valid member ID.", stringWriter.ToString());
+                    Assert.Contains("Invalid input. Please enter a valid member ID.", output);
                 }
                 else
                 {
-                    Assert.Contains("Member not found. Please enter a valid member ID.", stringWriter.ToString());
+                    Assert.Contains("Member not found. Please enter a valid member ID.", output);
                 }
             }
         }
@@ -218,14 +224,13 @@ namespace LiMS.Tests.Presentation
                     });
                 }
             }
-            _mockLibraryService.Setup(l => l.GetAllMembers()).Returns(members);
+            _mockMemberRepo.Setup(r => r.GetAll()).Returns(members);
 
-            // Set up to capture console output
             var stringWriter = new System.IO.StringWriter();
             Console.SetOut(stringWriter);
 
             // Act
-            _memberManagement.ViewAllMembers(_mockLibraryService.Object);
+            _memberManagement.ViewAllMembers(_libraryService);
 
             // Assert
             var output = stringWriter.ToString().Trim();
@@ -240,8 +245,8 @@ namespace LiMS.Tests.Presentation
             }
             else
             {
-                Assert.Contains("No members found.", output); // Ensure correct message is present
-                Assert.DoesNotContain("ID:", output); // Ensure no member details are present
+                Assert.Contains("No members found.", output);
+                Assert.DoesNotContain("ID:", output);
             }
         }
 
@@ -262,61 +267,59 @@ namespace LiMS.Tests.Presentation
             Console.SetOut(stringWriter);
 
             // Act
-            _memberManagement.ManageMembers(_mockLibraryService.Object);
+            _memberManagement.ManageMembers(_libraryService);
 
             // Assert
+            var output = stringWriter.ToString().Trim();
+
             if (shouldAdd)
             {
-                _mockLibraryService.Verify(l => l.AddMember(It.IsAny<Member>()), Times.Once);
-                Assert.Contains("Enter details for the new member:", stringWriter.ToString());
+                _mockMemberRepo.Verify(r => r.Add(It.IsAny<Member>()), Times.Once);
+                Assert.Contains("Enter details for the new member:", output);
             }
             else
             {
-                _mockLibraryService.Verify(l => l.AddMember(It.IsAny<Member>()), Times.Never);
+                _mockMemberRepo.Verify(r => r.Add(It.IsAny<Member>()), Times.Never);
             }
 
             if (shouldUpdate)
             {
-                _mockLibraryService.Verify(l => l.UpdateMember(It.IsAny<Member>()), Times.Once);
-                Assert.Contains("Enter ID of the member to update:", stringWriter.ToString());
+                _mockMemberRepo.Verify(r => r.Update(It.IsAny<Member>()), Times.Once);
+                Assert.Contains("Enter ID of the member to update:", output);
             }
             else
             {
-                _mockLibraryService.Verify(l => l.UpdateMember(It.IsAny<Member>()), Times.Never);
+                _mockMemberRepo.Verify(r => r.Update(It.IsAny<Member>()), Times.Never);
             }
 
             if (shouldDelete)
             {
-                _mockLibraryService.Verify(l => l.DeleteMember(It.IsAny<int>()), Times.Once);
-                Assert.Contains("Enter ID of the member to delete:", stringWriter.ToString());
+                _mockMemberRepo.Verify(r => r.Delete(It.IsAny<int>()), Times.Once);
+                Assert.Contains("Enter ID of the member to delete:", output);
             }
             else
             {
-                _mockLibraryService.Verify(l => l.DeleteMember(It.IsAny<int>()), Times.Never);
+                _mockMemberRepo.Verify(r => r.Delete(It.IsAny<int>()), Times.Never);
             }
 
             if (shouldView)
             {
-                _mockLibraryService.Verify(l => l.GetAllMembers(), Times.Once);
-                Assert.Contains("===== All Members =====", stringWriter.ToString());
+                _mockMemberRepo.Verify(r => r.GetAll(), Times.Once);
+                Assert.Contains("===== All Members =====", output);
             }
             else
             {
-                _mockLibraryService.Verify(l => l.GetAllMembers(), Times.Never);
+                _mockMemberRepo.Verify(r => r.GetAll(), Times.Never);
             }
 
             if (input == "5")
             {
-                Assert.Contains("===== Manage Members =====", stringWriter.ToString());
+                Assert.Contains("===== Manage Members =====", output);
             }
             else if (input == "invalid")
             {
-                Assert.Contains("Invalid input. Please enter a number from 1 to 5.", stringWriter.ToString());
+                Assert.Contains("Invalid input. Please enter a number from 1 to 5.", output);
             }
         }
-
-
-
-
     }
 }

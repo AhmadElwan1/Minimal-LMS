@@ -112,6 +112,7 @@ namespace Presentation
             if (int.TryParse(Console.ReadLine(), out int memberID))
             {
                 Member memberToUpdate = libraryService.GetMemberById(memberID);
+
                 Console.Write("New name (leave blank to keep current): ");
                 string newName = Console.ReadLine() ?? "";
                 Console.Write("New email (leave blank to keep current): ");
@@ -123,12 +124,15 @@ namespace Presentation
                     memberToUpdate.Email = newEmail;
 
                 libraryService.UpdateMember(memberToUpdate);
+                Console.WriteLine("Member updated successfully!");
             }
             else
             {
                 Console.WriteLine("Invalid input. Please enter a valid member ID.");
             }
         }
+
+
 
         public void DeleteMember(LibraryService libraryService)
         {
