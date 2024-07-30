@@ -1,7 +1,7 @@
 ﻿using Application;
 using Domain;
 
-namespace LiMS.API.Routes 
+namespace LiMS.API.Routes
 {
     public static class BorrowRoutes
     {

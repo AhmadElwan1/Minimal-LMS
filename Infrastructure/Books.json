@@ -1,11 +1,11 @@
 [
   {
     "BookId": 1,
-    "Title": "edd",
-    "Author": "ed",
-    "IsBorrowed": true,
-    "BorrowedDate": "2024-07-23T11:06:30.303287+03:00",
-    "BorrowedBy": 3
+    "Title": "Updated",
+    "Author": "New Author",
+    "IsBorrowed": false,
+    "BorrowedDate": null,
+    "BorrowedBy": null
   },
   {
     "BookId": 2,
@@ -27,9 +27,9 @@
     "BookId": 4,
     "Title": "ccc",
     "Author": "ccc",
-    "IsBorrowed": false,
-    "BorrowedDate": null,
-    "BorrowedBy": null
+    "IsBorrowed": true,
+    "BorrowedDate": "2024-07-30T11:10:13.8524794+03:00",
+    "BorrowedBy": 3
   },
   {
     "BookId": 5,
@@ -88,11 +88,11 @@
     "BorrowedBy": null
   },
   {
-    "BookId": 20,
-    "Title": "Karam",
-    "Author": "Bataineh",
+    "BookId": 21,
+    "Title": "Dell",
+    "Author": "Ahmad",
     "IsBorrowed": false,
-    "BorrowedDate": "2024-07-29T14:28:29.042Z",
+    "BorrowedDate": "2024-07-30T07:52:06.415Z",
     "BorrowedBy": 0
   }
 ]
