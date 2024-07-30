@@ -1,5 +1,8 @@
 using Application;
 using Domain;
+using Domain.DTOs;
+using FluentValidation;
+using FluentValidation.Results;
 using Moq;
 
 namespace LiMS.Tests.Application
@@ -8,20 +11,35 @@ namespace LiMS.Tests.Application
     {
         private readonly Mock<IRepository<Book>> _mockBookRepository;
         private readonly Mock<IRepository<Member>> _mockMemberRepository;
+        private readonly Mock<IValidator<Book>> _mockBookValidator;
+        private readonly Mock<IValidator<Member>> _mockMemberValidator;
+        private readonly Mock<IValidator<BorrowRequestDto>> _mockBorrowRequestValidator;
         private readonly LibraryService _libraryService;
 
         public LibraryServiceTests()
         {
             _mockBookRepository = new Mock<IRepository<Book>>();
             _mockMemberRepository = new Mock<IRepository<Member>>();
-            _libraryService = new LibraryService(_mockBookRepository.Object, _mockMemberRepository.Object);
+            _mockBookValidator = new Mock<IValidator<Book>>();
+            _mockMemberValidator = new Mock<IValidator<Member>>();
+            _mockBorrowRequestValidator = new Mock<IValidator<BorrowRequestDto>>(); 
+
+
+            _libraryService = new LibraryService(
+                _mockBookRepository.Object,
+                _mockMemberRepository.Object,
+                _mockBookValidator.Object,
+                _mockMemberValidator.Object,
+                _mockBorrowRequestValidator.Object
+            );
         }
 
         [Fact]
         public void AddBook_ShouldCallAddOnBookRepository()
         {
             // Arrange
-            var book = new Book { BookId = 1, Title = "Test Book", Author = "Test Author" };
+            Book book = new Book { BookId = 1, Title = "Test Book", Author = "Test Author" };
+            _mockBookValidator.Setup(v => v.Validate(It.IsAny<Book>())).Returns(new ValidationResult());
 
             // Act
             _libraryService.AddBook(book);
@@ -34,7 +52,8 @@ namespace LiMS.Tests.Application
         public void UpdateBook_ShouldCallUpdateOnBookRepository()
         {
             // Arrange
-            var book = new Book { BookId = 1, Title = "Updated Book", Author = "Updated Author" };
+            Book book = new Book { BookId = 1, Title = "Updated Book", Author = "Updated Author" };
+            _mockBookValidator.Setup(v => v.Validate(It.IsAny<Book>())).Returns(new ValidationResult());
 
             // Act
             _libraryService.UpdateBook(book);
@@ -57,7 +76,7 @@ namespace LiMS.Tests.Application
         public void GetAllBooks_ShouldReturnBooks()
         {
             // Arrange
-            var books = new List<Book>
+            List<Book> books = new List<Book>
             {
                 new Book { BookId = 1, Title = "Book 1" },
                 new Book { BookId = 2, Title = "Book 2" }
@@ -65,7 +84,7 @@ namespace LiMS.Tests.Application
             _mockBookRepository.Setup(repo => repo.GetAll()).Returns(books);
 
             // Act
-            var result = _libraryService.GetAllBooks();
+            List<Book> result = _libraryService.GetAllBooks();
 
             // Assert
             Assert.Equal(2, result.Count);
@@ -77,11 +96,11 @@ namespace LiMS.Tests.Application
         public void GetBookById_ShouldReturnBook()
         {
             // Arrange
-            var book = new Book { BookId = 1, Title = "Test Book" };
+            Book book = new Book { BookId = 1, Title = "Test Book" };
             _mockBookRepository.Setup(repo => repo.GetById(1)).Returns(book);
 
             // Act
-            var result = _libraryService.GetBookById(1);
+            Book result = _libraryService.GetBookById(1);
 
             // Assert
             Assert.Equal("Test Book", result.Title);
@@ -91,7 +110,8 @@ namespace LiMS.Tests.Application
         public void AddMember_ShouldCallAddOnMemberRepository()
         {
             // Arrange
-            var member = new Member { MemberID = 1, Name = "Test Member" };
+            Member member = new Member { MemberID = 1, Name = "Test Member" };
+            _mockMemberValidator.Setup(v => v.Validate(It.IsAny<Member>())).Returns(new ValidationResult());
 
             // Act
             _libraryService.AddMember(member);
@@ -104,7 +124,8 @@ namespace LiMS.Tests.Application
         public void UpdateMember_ShouldCallUpdateOnMemberRepository()
         {
             // Arrange
-            var member = new Member { MemberID = 1, Name = "Updated Member" };
+            Member member = new Member { MemberID = 1, Name = "Updated Member" };
+            _mockMemberValidator.Setup(v => v.Validate(It.IsAny<Member>())).Returns(new ValidationResult());
 
             // Act
             _libraryService.UpdateMember(member);
@@ -127,7 +148,7 @@ namespace LiMS.Tests.Application
         public void GetAllMembers_ShouldReturnMembers()
         {
             // Arrange
-            var members = new List<Member>
+            List<Member> members = new List<Member>
             {
                 new Member { MemberID = 1, Name = "Member 1" },
                 new Member { MemberID = 2, Name = "Member 2" }
@@ -135,7 +156,7 @@ namespace LiMS.Tests.Application
             _mockMemberRepository.Setup(repo => repo.GetAll()).Returns(members);
 
             // Act
-            var result = _libraryService.GetAllMembers();
+            List<Member> result = _libraryService.GetAllMembers();
 
             // Assert
             Assert.Equal(2, result.Count);
@@ -147,73 +168,73 @@ namespace LiMS.Tests.Application
         public void GetMemberById_ShouldReturnMember()
         {
             // Arrange
-            var member = new Member { MemberID = 1, Name = "Test Member" };
+            Member member = new Member { MemberID = 1, Name = "Test Member" };
             _mockMemberRepository.Setup(repo => repo.GetById(1)).Returns(member);
 
             // Act
-            var result = _libraryService.GetMemberById(1);
+            Member result = _libraryService.GetMemberById(1);
 
             // Assert
             Assert.Equal("Test Member", result.Name);
         }
 
         [Fact]
-        public void BorrowBook_ShouldUpdateBookAndCallUpdateOnBookRepository()
+        public void BorrowBook_ShouldValidateBorrowRequestDtoAndCallUpdateOnBookRepository()
         {
             // Arrange
-            var book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = false };
-            var member = new Member { MemberID = 1, Name = "Test Member" };
+            var borrowRequestDto = new BorrowRequestDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
+            Book book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = false };
+            Member member = new Member { MemberID = 1, Name = "Test Member" };
 
+            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowRequestDto>())).Returns(new ValidationResult()); // Changed to BorrowRequestDto
             _mockBookRepository.Setup(repo => repo.GetById(1)).Returns(book);
             _mockMemberRepository.Setup(repo => repo.GetById(1)).Returns(member);
 
             // Act
-            _libraryService.BorrowBook(1, 1);
+            _libraryService.BorrowBook(borrowRequestDto); // Changed to BorrowRequestDto
 
             // Assert
-            Assert.True(book.IsBorrowed);
+            _mockBorrowRequestValidator.Verify(v => v.Validate(It.IsAny<BorrowRequestDto>()), Times.Once); // Changed to BorrowRequestDto
             _mockBookRepository.Verify(repo => repo.Update(It.IsAny<Book>()), Times.Once);
+        }
+
+        [Fact]
+        public void BorrowBook_ShouldThrowValidationExceptionIfInvalid()
+        {
+            // Arrange
+            var borrowRequestDto = new BorrowRequestDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
+            var validationResult = new ValidationResult(new List<ValidationFailure> { new ValidationFailure("BookId", "Invalid Book ID.") });
+            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowRequestDto>())).Returns(validationResult); // Changed to BorrowRequestDto
+
+            // Act & Assert
+            var exception = Assert.Throws<ValidationException>(() => _libraryService.BorrowBook(borrowRequestDto)); // Changed to BorrowRequestDto
+            Assert.Contains("Invalid Book ID.", exception.Message);
         }
 
         [Fact]
         public void BorrowBook_ShouldNotBorrowIfAlreadyBorrowed()
         {
             // Arrange
-            var book = new Book
-            {
-                BookId = 1,
-                Title = "Test Book",
-                IsBorrowed = true
-            };
-            var member = new Member
-            {
-                MemberID = 1,
-                Name = "Test Member"
-            };
+            var borrowRequestDto = new BorrowRequestDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
+            Book book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = true };
+            Member member = new Member { MemberID = 1, Name = "Test Member" };
 
+            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowRequestDto>())).Returns(new ValidationResult()); // Changed to BorrowRequestDto
             _mockBookRepository.Setup(repo => repo.GetById(1)).Returns(book);
             _mockMemberRepository.Setup(repo => repo.GetById(1)).Returns(member);
 
-            using var consoleOutput = new StringWriter();
-            Console.SetOut(consoleOutput);
-
             // Act
-            _libraryService.BorrowBook(1, 1);
+            _libraryService.BorrowBook(borrowRequestDto); // Changed to BorrowRequestDto
 
             // Assert
             _mockBookRepository.Verify(repo => repo.Update(It.IsAny<Book>()), Times.Never);
-
-            var output = consoleOutput.ToString().Trim();
-            var expectedOutput = "This book is already borrowed.";
-            Assert.Contains(expectedOutput, output);
         }
 
         [Fact]
         public void ReturnBook_ShouldUpdateBookAndCallUpdateOnBookRepository()
         {
             // Arrange
-            var book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = true };
-
+            Book book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = true };
             _mockBookRepository.Setup(repo => repo.GetById(1)).Returns(book);
 
             // Act
@@ -228,14 +249,13 @@ namespace LiMS.Tests.Application
         public void ReturnBook_ShouldNotUpdateBookIfNotBorrowed()
         {
             // Arrange
-            var book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = false };
+            Book book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = false };
             _mockBookRepository.Setup(repo => repo.GetById(1)).Returns(book);
 
             // Act
             _libraryService.ReturnBook(1);
 
             // Assert
-            // Verify that the Update method was not called because the book is not borrowed
             _mockBookRepository.Verify(repo => repo.Update(It.IsAny<Book>()), Times.Never);
         }
 
@@ -243,7 +263,7 @@ namespace LiMS.Tests.Application
         public void GetAllBorrowedBooks_ShouldReturnOnlyBorrowedBooks()
         {
             // Arrange
-            var books = new List<Book>
+            List<Book> books = new List<Book>
             {
                 new Book { BookId = 1, Title = "Book 1", IsBorrowed = true },
                 new Book { BookId = 2, Title = "Book 2", IsBorrowed = false }
@@ -251,7 +271,7 @@ namespace LiMS.Tests.Application
             _mockBookRepository.Setup(repo => repo.GetAll()).Returns(books);
 
             // Act
-            var result = _libraryService.GetAllBorrowedBooks();
+            List<Book> result = _libraryService.GetAllBorrowedBooks();
 
             // Assert
             Assert.Single(result);

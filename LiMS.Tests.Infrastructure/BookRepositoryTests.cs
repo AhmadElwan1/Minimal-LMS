@@ -18,9 +18,9 @@ namespace LiMS.Tests.Infrastructure
         [Fact]
         public void Add_ShouldAddBookToRepository()
         {
-            var book = new Book { BookId = 1, Title = "Test Book" };
+            Book book = new Book { BookId = 1, Title = "Test Book" };
             _repository.Add(book);
-            var books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(_booksFile));
+            List<Book>? books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(_booksFile));
             if (books != null) Assert.Contains(books, b => b.BookId == book.BookId);
         }
 
@@ -36,7 +36,7 @@ namespace LiMS.Tests.Infrastructure
         [Fact]
         public void GetById_ShouldReturnBook()
         {
-            var book = _repository.GetById(1);
+            Book book = _repository.GetById(1);
             Assert.NotNull(book);
         }
 
@@ -54,16 +54,16 @@ namespace LiMS.Tests.Infrastructure
         public void Update_ShouldUpdateExistingBook()
         {
             // Arrange
-            var initialBook = new Book { BookId = 1, Title = "Initial Title" };
-            var updatedBook = new Book { BookId = 1, Title = "Updated Title" };
+            Book initialBook = new Book { BookId = 1, Title = "Initial Title" };
+            Book updatedBook = new Book { BookId = 1, Title = "Updated Title" };
             _repository.Add(initialBook);
 
             // Act
             _repository.Update(updatedBook);
 
             // Assert
-            var books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(_booksFile));
-            var book = books?.Find(b => b.BookId == updatedBook.BookId);
+            List<Book>? books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(_booksFile));
+            Book? book = books?.Find(b => b.BookId == updatedBook.BookId);
             Assert.NotNull(book);
             Assert.Equal("Updated Title", book.Title);
         }

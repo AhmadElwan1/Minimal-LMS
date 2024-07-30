@@ -20,12 +20,10 @@ namespace Infrastructure
             try
             {
                 string booksJson = File.ReadAllText(_booksFile);
-                List<Book> books = JsonConvert.DeserializeObject<List<Book>>(booksJson) ?? new List<Book>();
-                return books;
+                return JsonConvert.DeserializeObject<List<Book>>(booksJson) ?? new List<Book>();
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as needed
                 Console.WriteLine($"Error reading file {_booksFile}: {ex.Message}");
                 return new List<Book>();
             }
@@ -56,6 +54,7 @@ namespace Infrastructure
             books.Add(entity);
             SaveChanges(books);
         }
+
 
         public void Update(Book entity)
         {
@@ -96,7 +95,6 @@ namespace Infrastructure
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as needed
                 Console.WriteLine($"Error writing file {_booksFile}: {ex.Message}");
             }
         }
