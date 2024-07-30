@@ -5,7 +5,7 @@ using FluentValidation.AspNetCore;
 using Infrastructure;
 using LiMS.API.Routes;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IRepository<Book>, BookRepository>();
 builder.Services.AddSingleton<IRepository<Member>, MemberRepository>();
@@ -22,7 +22,7 @@ builder.Services.AddFluentValidation(fv =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();

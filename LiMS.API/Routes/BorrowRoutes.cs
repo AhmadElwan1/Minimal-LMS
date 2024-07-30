@@ -10,7 +10,7 @@ namespace LiMS.API.Routes
         public static void MapBorrowRoutes(this WebApplication app)
         {
             // Route to borrow a book
-            app.MapPost("/api/borrow", async (BorrowRequestDto request, LibraryService libraryService, IValidator<BorrowRequestDto> validator) =>
+            app.MapPost("/borrow", async (BorrowRequestDto request, LibraryService libraryService, IValidator<BorrowRequestDto> validator) =>
             {
                 var validationResult = await validator.ValidateAsync(request);
                 if (!validationResult.IsValid)
@@ -35,7 +35,7 @@ namespace LiMS.API.Routes
             .WithTags("Borrow");
 
             // Route to return a book
-            app.MapPost("/api/return", async (int bookId, LibraryService libraryService) =>
+            app.MapPost("/return", async (int bookId, LibraryService libraryService) =>
             {
                 try
                 {
@@ -56,7 +56,7 @@ namespace LiMS.API.Routes
             .WithTags("Borrow");
 
             // Route to get all borrowed books
-            app.MapGet("/api/borrowed", (LibraryService libraryService) =>
+            app.MapGet("/borrowed", (LibraryService libraryService) =>
             {
                 try
                 {

@@ -9,7 +9,7 @@ namespace LiMS.API.Routes
     {
         public static void MapBookRoutes(this WebApplication app)
         {
-            app.MapGet("/api/books", (LibraryService libraryService) =>
+            app.MapGet("/books", (LibraryService libraryService) =>
             {
                 try
                 {
@@ -24,7 +24,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-            app.MapGet("/api/books/{id}", (int id, LibraryService libraryService) =>
+            app.MapGet("/books/{id}", (int id, LibraryService libraryService) =>
             {
                 try
                 {
@@ -39,7 +39,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-            app.MapPost("/api/books", async (Book book, LibraryService libraryService, IValidator<Book> validator) =>
+            app.MapPost("/books", async (Book book, LibraryService libraryService, IValidator<Book> validator) =>
             {
                 var validationResult = await validator.ValidateAsync(book);
                 if (!validationResult.IsValid)
@@ -48,7 +48,7 @@ namespace LiMS.API.Routes
                 try
                 {
                     libraryService.AddBook(book);
-                    return Results.Created($"/api/books/{book.BookId}", book);
+                    return Results.Created($"/books/{book.BookId}", book);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -66,7 +66,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-            app.MapPut("/api/books/{id}", async (int id, Book book, LibraryService libraryService, IValidator<Book> validator) =>
+            app.MapPut("/books/{id}", async (int id, Book book, LibraryService libraryService, IValidator<Book> validator) =>
             {
                 var validationResult = await validator.ValidateAsync(book);
                 if (!validationResult.IsValid)
@@ -100,7 +100,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-            app.MapDelete("/api/books/{id}", (int id, LibraryService libraryService) =>
+            app.MapDelete("/books/{id}", (int id, LibraryService libraryService) =>
             {
                 try
                 {
@@ -123,8 +123,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-
-            app.MapPatch("/api/books/{id}", async (int id, BookUpdateDto updateDto, LibraryService libraryService, IValidator<Book> validator) =>
+            app.MapPatch("/books/{id}", async (int id, BookUpdateDto updateDto, LibraryService libraryService, IValidator<Book> validator) =>
             {
                 if (updateDto == null)
                     return Results.BadRequest(new { Error = "Invalid update data." });
@@ -134,7 +133,6 @@ namespace LiMS.API.Routes
                     Book existingBook = libraryService.GetBookById(id);
                     if (existingBook == null)
                         return Results.NotFound(new { Error = "Book not found." });
-
 
                     if (updateDto.Title != null)
                         existingBook.Title = updateDto.Title;
@@ -150,8 +148,6 @@ namespace LiMS.API.Routes
 
                     if (updateDto.BorrowedBy.HasValue)
                         existingBook.BorrowedBy = updateDto.BorrowedBy.Value;
-
-
 
                     var validationResult = await validator.ValidateAsync(existingBook);
                     if (!validationResult.IsValid)

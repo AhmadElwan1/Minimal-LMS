@@ -21,7 +21,6 @@ namespace Domain.Validators
             RuleFor(book => book.IsBorrowed)
                 .Equal(true).When(book => book.BorrowedDate.HasValue).WithMessage("A book with a borrowed date must be marked as borrowed.")
                 .Equal(false).When(book => !book.BorrowedDate.HasValue).WithMessage("A book without a borrowed date must not be marked as borrowed.");
-
         }
     }
 }

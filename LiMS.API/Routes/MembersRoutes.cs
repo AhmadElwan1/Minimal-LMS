@@ -9,7 +9,7 @@ namespace LiMS.API.Routes
     {
         public static void MapMemberRoutes(this WebApplication app)
         {
-            app.MapGet("/api/members", (LibraryService libraryService) =>
+            app.MapGet("/members", (LibraryService libraryService) =>
             {
                 try
                 {
@@ -24,7 +24,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Members");
 
-            app.MapGet("/api/members/{id}", (int id, LibraryService libraryService) =>
+            app.MapGet("/members/{id}", (int id, LibraryService libraryService) =>
             {
                 try
                 {
@@ -39,7 +39,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Members");
 
-            app.MapPost("/api/members", async (Member member, LibraryService libraryService, IValidator<Member> validator) =>
+            app.MapPost("/members", async (Member member, LibraryService libraryService, IValidator<Member> validator) =>
             {
                 var validationResult = await validator.ValidateAsync(member);
                 if (!validationResult.IsValid)
@@ -48,7 +48,7 @@ namespace LiMS.API.Routes
                 try
                 {
                     libraryService.AddMember(member);
-                    return Results.Created($"/api/members/{member.MemberID}", member);
+                    return Results.Created($"/members/{member.MemberID}", member);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -66,7 +66,7 @@ namespace LiMS.API.Routes
             })
             .WithTags("Members");
 
-            app.MapPut("/api/members/{id}", async (int id, Member member, LibraryService libraryService, IValidator<Member> validator) =>
+            app.MapPut("/members/{id}", async (int id, Member member, LibraryService libraryService, IValidator<Member> validator) =>
             {
                 var validationResult = await validator.ValidateAsync(member);
                 if (!validationResult.IsValid)
@@ -100,50 +100,47 @@ namespace LiMS.API.Routes
             })
             .WithTags("Members");
 
-            app.MapPatch("/api/members/{id}", async (int id, MemberUpdateDto updateDto, LibraryService libraryService, IValidator<Member> validator) =>
+            app.MapPatch("/members/{id}", async (int id, MemberUpdateDto updateDto, LibraryService libraryService, IValidator<Member> validator) =>
+            {
+                if (updateDto == null)
+                    return Results.BadRequest(new { Error = "Invalid update data." });
+
+                try
                 {
-                    if (updateDto == null)
-                        return Results.BadRequest(new { Error = "Invalid update data." });
+                    Member existingMember = libraryService.GetMemberById(id);
+                    if (existingMember == null)
+                        return Results.NotFound(new { Error = "Member not found." });
 
-                    try
-                    {
-                        Member existingMember = libraryService.GetMemberById(id);
-                        if (existingMember == null)
-                            return Results.NotFound(new { Error = "Member not found." });
+                    if (updateDto.Name != null)
+                        existingMember.Name = updateDto.Name;
 
+                    if (updateDto.Email != null)
+                        existingMember.Email = updateDto.Email;
 
-                        if (updateDto.Name != null)
-                            existingMember.Name = updateDto.Name;
+                    var validationResult = await validator.ValidateAsync(existingMember);
+                    if (!validationResult.IsValid)
+                        return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
 
-                        if (updateDto.Email != null)
-                            existingMember.Email = updateDto.Email;
+                    libraryService.UpdateMember(existingMember);
+                    return Results.NoContent();
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { Error = ex.Message });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(new { Error = ex.Message });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
+                    return Results.Problem("An error occurred while updating the member.");
+                }
+            })
+            .WithTags("Members");
 
-
-                        var validationResult = await validator.ValidateAsync(existingMember);
-                        if (!validationResult.IsValid)
-                            return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
-
-                        libraryService.UpdateMember(existingMember);
-                        return Results.NoContent();
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        return Results.BadRequest(new { Error = ex.Message });
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        return Results.Conflict(new { Error = ex.Message });
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
-                        return Results.Problem("An error occurred while updating the member.");
-                    }
-                })
-                .WithTags("Members");
-            
-
-        app.MapDelete("/api/members/{id}", (int id, LibraryService libraryService) =>
+            app.MapDelete("/members/{id}", (int id, LibraryService libraryService) =>
             {
                 try
                 {
