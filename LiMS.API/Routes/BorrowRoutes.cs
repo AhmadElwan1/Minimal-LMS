@@ -1,7 +1,8 @@
 ﻿using Application;
 using Domain;
-using Domain.DTOs;
 using FluentValidation;
+using FluentValidation.Results;
+using LiMS.API.Models;
 
 namespace LiMS.API.Routes
 {
@@ -9,16 +10,35 @@ namespace LiMS.API.Routes
     {
         public static void MapBorrowRoutes(this WebApplication app)
         {
-            // Route to borrow a book
-            app.MapPost("/borrow", async (BorrowRequestDto request, LibraryService libraryService, IValidator<BorrowRequestDto> validator) =>
+            app.MapPost("/borrow", (BorrowReturnModel request, LibraryService libraryService, IValidator<BorrowReturnModel> validator) =>
             {
-                var validationResult = await validator.ValidateAsync(request);
+                // Validate request
+                ValidationResult validationResult = validator.Validate(request);
                 if (!validationResult.IsValid)
                     return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
 
+                // Validate Member ID
+                if (!request.MemberId.HasValue)
+                {
+                    return Results.BadRequest(new { Message = "You must provide a Member ID to borrow a book." });
+                }
+
+                // Check if the book exists
+                if (!libraryService.BookExists(request.BookId))
+                {
+                    return Results.NotFound(new { Message = "Book not found with the provided Book ID." });
+                }
+
+                // Check if the member exists
+                if (!libraryService.MemberExists(request.MemberId.Value))
+                {
+                    return Results.NotFound(new { Message = "Member not found with the provided Member ID." });
+                }
+
                 try
                 {
-                    libraryService.BorrowBook(request);
+                    // Perform the borrowing operation
+                    libraryService.BorrowBook(request.BookId, request.MemberId.Value);
                     return Results.Ok(new { Message = "Book borrowed successfully!" });
                 }
                 catch (InvalidOperationException ex)
@@ -27,19 +47,29 @@ namespace LiMS.API.Routes
                 }
                 catch (Exception ex)
                 {
-                    // Log the exception (could use a logging framework here)
                     Console.WriteLine($"Error borrowing book: {ex.Message}");
                     return Results.Problem("An error occurred while borrowing the book.");
                 }
             })
             .WithTags("Borrow");
 
-            // Route to return a book
-            app.MapPost("/return", async (int bookId, LibraryService libraryService) =>
+            app.MapPost("/return", (BorrowReturnModel request, LibraryService libraryService, IValidator<BorrowReturnModel> validator) =>
             {
+                // Validate request
+                ValidationResult validationResult = validator.Validate(request);
+                if (!validationResult.IsValid)
+                    return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+
+                // Check if the book exists
+                if (!libraryService.BookExists(request.BookId))
+                {
+                    return Results.NotFound(new { Message = "Book not found." });
+                }
+
                 try
                 {
-                    libraryService.ReturnBook(bookId);
+                    // Perform the return operation
+                    libraryService.ReturnBook(request.BookId);
                     return Results.Ok(new { Message = "Book returned successfully!" });
                 }
                 catch (InvalidOperationException ex)
@@ -48,14 +78,12 @@ namespace LiMS.API.Routes
                 }
                 catch (Exception ex)
                 {
-                    // Log the exception (could use a logging framework here)
-                    Console.WriteLine($"Error returning book with ID {bookId}: {ex.Message}");
+                    Console.WriteLine($"Error returning book with ID {request.BookId}: {ex.Message}");
                     return Results.Problem("An error occurred while returning the book.");
                 }
             })
             .WithTags("Borrow");
 
-            // Route to get all borrowed books
             app.MapGet("/borrowed", (LibraryService libraryService) =>
             {
                 try
@@ -65,7 +93,6 @@ namespace LiMS.API.Routes
                 }
                 catch (Exception ex)
                 {
-                    // Log the exception (could use a logging framework here)
                     Console.WriteLine($"Error retrieving borrowed books: {ex.Message}");
                     return Results.Problem("An error occurred while retrieving borrowed books.");
                 }

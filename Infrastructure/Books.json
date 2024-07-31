@@ -3,16 +3,16 @@
     "BookId": 1,
     "Title": "Updated",
     "Author": "New Author",
-    "IsBorrowed": false,
-    "BorrowedDate": null,
-    "BorrowedBy": null
+    "IsBorrowed": true,
+    "BorrowedDate": "2024-07-31T14:38:02.8019452+03:00",
+    "BorrowedBy": 11
   },
   {
     "BookId": 2,
     "Title": "aaa",
     "Author": "aaa",
     "IsBorrowed": true,
-    "BorrowedDate": "2024-07-28T10:38:52.114748+03:00",
+    "BorrowedDate": "2024-07-31T13:12:40.6583162+03:00",
     "BorrowedBy": 1
   },
   {

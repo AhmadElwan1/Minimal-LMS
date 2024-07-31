@@ -1,7 +1,6 @@
 ﻿using Application;
 using Domain;
-using Domain.DTOs;
-using FluentValidation;
+using FluentValidation.Results;
 
 namespace LiMS.API.Routes
 {
@@ -14,41 +13,41 @@ namespace LiMS.API.Routes
                 try
                 {
                     List<Member> members = libraryService.GetAllMembers();
-                    return Results.Ok(members);
+                    List<MemberModel> memberModels = members.Select(m => new MemberModel
+                    {
+                        MemberID = m.MemberID,
+                        Name = m.Name,
+                        Email = m.Email
+                    }).ToList();
+
+                    return Results.Ok(memberModels);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error retrieving members: {ex.Message}");
                     return Results.Problem("An error occurred while retrieving members.");
                 }
-            })
-            .WithTags("Members");
+            }).WithTags("Members");
 
-            app.MapGet("/members/{id}", (int id, LibraryService libraryService) =>
+            app.MapPost("/members", (MemberModel memberModel, LibraryService libraryService) =>
             {
-                try
-                {
-                    Member member = libraryService.GetMemberById(id);
-                    return member != null ? Results.Ok(member) : Results.NotFound(new { Error = "Member not found." });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error retrieving member with ID {id}: {ex.Message}");
-                    return Results.Problem("An error occurred while retrieving the member.");
-                }
-            })
-            .WithTags("Members");
+                MemberModel.Validator validator = new MemberModel.Validator();
 
-            app.MapPost("/members", async (Member member, LibraryService libraryService, IValidator<Member> validator) =>
-            {
-                var validationResult = await validator.ValidateAsync(member);
+                ValidationResult validationResult = validator.Validate(memberModel);
                 if (!validationResult.IsValid)
                     return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
 
                 try
                 {
+                    Member member = new Member
+                    {
+                        MemberID = memberModel.MemberID,
+                        Name = memberModel.Name,
+                        Email = memberModel.Email
+                    };
+
                     libraryService.AddMember(member);
-                    return Results.Created($"/members/{member.MemberID}", member);
+                    return Results.Created($"/members/{member.MemberID}", memberModel);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -63,63 +62,27 @@ namespace LiMS.API.Routes
                     Console.WriteLine($"Error adding member: {ex.Message}");
                     return Results.Problem("An error occurred while adding the member.");
                 }
-            })
-            .WithTags("Members");
+            }).WithTags("Members");
 
-            app.MapPut("/members/{id}", async (int id, Member member, LibraryService libraryService, IValidator<Member> validator) =>
+            app.MapPut("/members/{id}", (int id, MemberModel memberModel, LibraryService libraryService) =>
             {
-                var validationResult = await validator.ValidateAsync(member);
+                MemberModel.Validator validator = new MemberModel.Validator();
+
+                ValidationResult validationResult = validator.Validate(memberModel);
                 if (!validationResult.IsValid)
                     return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
 
                 try
                 {
-                    if (member == null || id != member.MemberID)
+                    if (id != memberModel.MemberID)
                         return Results.BadRequest(new { Error = "Member ID mismatch." });
 
                     Member existingMember = libraryService.GetMemberById(id);
                     if (existingMember == null)
                         return Results.NotFound(new { Error = "Member not found." });
 
-                    libraryService.UpdateMember(member);
-                    return Results.NoContent();
-                }
-                catch (ArgumentException ex)
-                {
-                    return Results.BadRequest(new { Error = ex.Message });
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return Results.Conflict(new { Error = ex.Message });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
-                    return Results.Problem("An error occurred while updating the member.");
-                }
-            })
-            .WithTags("Members");
-
-            app.MapPatch("/members/{id}", async (int id, MemberUpdateDto updateDto, LibraryService libraryService, IValidator<Member> validator) =>
-            {
-                if (updateDto == null)
-                    return Results.BadRequest(new { Error = "Invalid update data." });
-
-                try
-                {
-                    Member existingMember = libraryService.GetMemberById(id);
-                    if (existingMember == null)
-                        return Results.NotFound(new { Error = "Member not found." });
-
-                    if (updateDto.Name != null)
-                        existingMember.Name = updateDto.Name;
-
-                    if (updateDto.Email != null)
-                        existingMember.Email = updateDto.Email;
-
-                    var validationResult = await validator.ValidateAsync(existingMember);
-                    if (!validationResult.IsValid)
-                        return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                    existingMember.Name = memberModel.Name;
+                    existingMember.Email = memberModel.Email;
 
                     libraryService.UpdateMember(existingMember);
                     return Results.NoContent();
@@ -137,8 +100,7 @@ namespace LiMS.API.Routes
                     Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
                     return Results.Problem("An error occurred while updating the member.");
                 }
-            })
-            .WithTags("Members");
+            }).WithTags("Members");
 
             app.MapDelete("/members/{id}", (int id, LibraryService libraryService) =>
             {
@@ -160,8 +122,7 @@ namespace LiMS.API.Routes
                     Console.WriteLine($"Error deleting member with ID {id}: {ex.Message}");
                     return Results.Problem("An error occurred while deleting the member.");
                 }
-            })
-            .WithTags("Members");
+            }).WithTags("Members");
         }
     }
 }

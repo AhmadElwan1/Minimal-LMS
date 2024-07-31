@@ -13,7 +13,7 @@ namespace LiMS.Tests.Application
         private readonly Mock<IRepository<Member>> _mockMemberRepository;
         private readonly Mock<IValidator<Book>> _mockBookValidator;
         private readonly Mock<IValidator<Member>> _mockMemberValidator;
-        private readonly Mock<IValidator<BorrowRequestDto>> _mockBorrowRequestValidator;
+        private readonly Mock<IValidator<BorrowReturnDto>> _mockBorrowRequestValidator;
         private readonly LibraryService _libraryService;
 
         public LibraryServiceTests()
@@ -22,7 +22,7 @@ namespace LiMS.Tests.Application
             _mockMemberRepository = new Mock<IRepository<Member>>();
             _mockBookValidator = new Mock<IValidator<Book>>();
             _mockMemberValidator = new Mock<IValidator<Member>>();
-            _mockBorrowRequestValidator = new Mock<IValidator<BorrowRequestDto>>(); 
+            _mockBorrowRequestValidator = new Mock<IValidator<BorrowReturnDto>>(); 
 
 
             _libraryService = new LibraryService(
@@ -182,11 +182,11 @@ namespace LiMS.Tests.Application
         public void BorrowBook_ShouldValidateBorrowRequestDtoAndCallUpdateOnBookRepository()
         {
             // Arrange
-            var borrowRequestDto = new BorrowRequestDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
+            BorrowReturnDto borrowRequestDto = new BorrowReturnDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
             Book book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = false };
             Member member = new Member { MemberID = 1, Name = "Test Member" };
 
-            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowRequestDto>())).Returns(new ValidationResult()); // Changed to BorrowRequestDto
+            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowReturnDto>())).Returns(new ValidationResult()); // Changed to BorrowRequestDto
             _mockBookRepository.Setup(repo => repo.GetById(1)).Returns(book);
             _mockMemberRepository.Setup(repo => repo.GetById(1)).Returns(member);
 
@@ -194,7 +194,7 @@ namespace LiMS.Tests.Application
             _libraryService.BorrowBook(borrowRequestDto); // Changed to BorrowRequestDto
 
             // Assert
-            _mockBorrowRequestValidator.Verify(v => v.Validate(It.IsAny<BorrowRequestDto>()), Times.Once); // Changed to BorrowRequestDto
+            _mockBorrowRequestValidator.Verify(v => v.Validate(It.IsAny<BorrowReturnDto>()), Times.Once); // Changed to BorrowRequestDto
             _mockBookRepository.Verify(repo => repo.Update(It.IsAny<Book>()), Times.Once);
         }
 
@@ -202,12 +202,12 @@ namespace LiMS.Tests.Application
         public void BorrowBook_ShouldThrowValidationExceptionIfInvalid()
         {
             // Arrange
-            var borrowRequestDto = new BorrowRequestDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
-            var validationResult = new ValidationResult(new List<ValidationFailure> { new ValidationFailure("BookId", "Invalid Book ID.") });
-            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowRequestDto>())).Returns(validationResult); // Changed to BorrowRequestDto
+            BorrowReturnDto borrowRequestDto = new BorrowReturnDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
+            ValidationResult validationResult = new ValidationResult(new List<ValidationFailure> { new ValidationFailure("BookId", "Invalid Book ID.") });
+            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowReturnDto>())).Returns(validationResult); // Changed to BorrowRequestDto
 
             // Act & Assert
-            var exception = Assert.Throws<ValidationException>(() => _libraryService.BorrowBook(borrowRequestDto)); // Changed to BorrowRequestDto
+            ValidationException exception = Assert.Throws<ValidationException>(() => _libraryService.BorrowBook(borrowRequestDto)); // Changed to BorrowRequestDto
             Assert.Contains("Invalid Book ID.", exception.Message);
         }
 
@@ -215,11 +215,11 @@ namespace LiMS.Tests.Application
         public void BorrowBook_ShouldNotBorrowIfAlreadyBorrowed()
         {
             // Arrange
-            var borrowRequestDto = new BorrowRequestDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
+            BorrowReturnDto borrowRequestDto = new BorrowReturnDto { BookId = 1, MemberId = 1 }; // Changed to BorrowRequestDto
             Book book = new Book { BookId = 1, Title = "Test Book", IsBorrowed = true };
             Member member = new Member { MemberID = 1, Name = "Test Member" };
 
-            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowRequestDto>())).Returns(new ValidationResult()); // Changed to BorrowRequestDto
+            _mockBorrowRequestValidator.Setup(v => v.Validate(It.IsAny<BorrowReturnDto>())).Returns(new ValidationResult()); // Changed to BorrowRequestDto
             _mockBookRepository.Setup(repo => repo.GetById(1)).Returns(book);
             _mockMemberRepository.Setup(repo => repo.GetById(1)).Returns(member);
 

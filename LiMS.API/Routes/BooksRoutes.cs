@@ -2,6 +2,8 @@
 using Domain;
 using Domain.DTOs;
 using FluentValidation;
+using FluentValidation.Results;
+using LiMS.API.Models;
 
 namespace LiMS.API.Routes
 {
@@ -14,7 +16,17 @@ namespace LiMS.API.Routes
                 try
                 {
                     List<Book> books = libraryService.GetAllBooks();
-                    return Results.Ok(books);
+                    List<BookModel> bookModels = books.Select(b => new BookModel
+                    {
+                        BookId = b.BookId,
+                        Title = b.Title,
+                        Author = b.Author,
+                        IsBorrowed = b.IsBorrowed,
+                        BorrowedDate = b.BorrowedDate,
+                        BorrowedBy = b.BorrowedBy
+                    }).ToList();
+
+                    return Results.Ok(bookModels);
                 }
                 catch (Exception ex)
                 {
@@ -24,31 +36,25 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-            app.MapGet("/books/{id}", (int id, LibraryService libraryService) =>
+            app.MapPost("/books", (BookModel bookModel, LibraryService libraryService, IValidator<BookModel> validator) =>
             {
-                try
-                {
-                    Book book = libraryService.GetBookById(id);
-                    return book != null ? Results.Ok(book) : Results.NotFound(new { Error = "Book not found." });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error retrieving book with ID {id}: {ex.Message}");
-                    return Results.Problem("An error occurred while retrieving the book.");
-                }
-            })
-            .WithTags("Books");
-
-            app.MapPost("/books", async (Book book, LibraryService libraryService, IValidator<Book> validator) =>
-            {
-                var validationResult = await validator.ValidateAsync(book);
+                ValidationResult validationResult = validator.Validate(bookModel);
                 if (!validationResult.IsValid)
                     return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
 
                 try
                 {
+                    Book book = new Book
+                    {
+                        BookId = bookModel.BookId,
+                        Title = bookModel.Title,
+                        Author = bookModel.Author,
+                        IsBorrowed = bookModel.IsBorrowed,
+                        BorrowedDate = bookModel.BorrowedDate,
+                        BorrowedBy = bookModel.BorrowedBy
+                    };
                     libraryService.AddBook(book);
-                    return Results.Created($"/books/{book.BookId}", book);
+                    return Results.Created($"/books/{book.BookId}", bookModel);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -66,22 +72,32 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-            app.MapPut("/books/{id}", async (int id, Book book, LibraryService libraryService, IValidator<Book> validator) =>
+            app.MapPut("/books/{id}", (int id, BookModel bookModel, LibraryService libraryService, IValidator<BookModel> validator) =>
             {
-                var validationResult = await validator.ValidateAsync(book);
+                ValidationResult validationResult = validator.Validate(bookModel);
                 if (!validationResult.IsValid)
                     return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
 
                 try
                 {
-                    if (book == null || id != book.BookId)
+                    if (id != bookModel.BookId)
                         return Results.BadRequest(new { Error = "Book ID mismatch." });
 
-                    Book existingBook = libraryService.GetBookById(id);
+                    Book? existingBook = libraryService.GetBookById(id);
                     if (existingBook == null)
                         return Results.NotFound(new { Error = "Book not found." });
 
-                    libraryService.UpdateBook(book);
+                    Book updatedBook = new Book
+                    {
+                        BookId = bookModel.BookId,
+                        Title = bookModel.Title,
+                        Author = bookModel.Author,
+                        IsBorrowed = bookModel.IsBorrowed,
+                        BorrowedDate = bookModel.BorrowedDate,
+                        BorrowedBy = bookModel.BorrowedBy
+                    };
+
+                    libraryService.UpdateBook(updatedBook);
                     return Results.NoContent();
                 }
                 catch (ArgumentException ex)
@@ -104,7 +120,7 @@ namespace LiMS.API.Routes
             {
                 try
                 {
-                    Book book = libraryService.GetBookById(id);
+                    Book? book = libraryService.GetBookById(id);
                     if (book == null)
                         return Results.NotFound(new { Error = "Book not found." });
 
@@ -123,14 +139,14 @@ namespace LiMS.API.Routes
             })
             .WithTags("Books");
 
-            app.MapPatch("/books/{id}", async (int id, BookUpdateDto updateDto, LibraryService libraryService, IValidator<Book> validator) =>
+            app.MapPatch("/books/{id}", (int id, BookUpdateDto updateDto, LibraryService libraryService, IValidator<BookModel> validator) =>
             {
                 if (updateDto == null)
                     return Results.BadRequest(new { Error = "Invalid update data." });
 
                 try
                 {
-                    Book existingBook = libraryService.GetBookById(id);
+                    Book? existingBook = libraryService.GetBookById(id);
                     if (existingBook == null)
                         return Results.NotFound(new { Error = "Book not found." });
 
@@ -149,7 +165,16 @@ namespace LiMS.API.Routes
                     if (updateDto.BorrowedBy.HasValue)
                         existingBook.BorrowedBy = updateDto.BorrowedBy.Value;
 
-                    var validationResult = await validator.ValidateAsync(existingBook);
+                    ValidationResult validationResult = validator.Validate(new BookModel
+                    {
+                        BookId = existingBook.BookId,
+                        Title = existingBook.Title,
+                        Author = existingBook.Author,
+                        IsBorrowed = existingBook.IsBorrowed,
+                        BorrowedDate = existingBook.BorrowedDate,
+                        BorrowedBy = existingBook.BorrowedBy
+                    });
+
                     if (!validationResult.IsValid)
                         return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
 
