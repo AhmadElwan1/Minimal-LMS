@@ -5,8 +5,6 @@ namespace LiMS.API.Models
 {
     public class BookModel : Book
     {
-
-        private int Hamzeh;
         public class Validator : AbstractValidator<BookModel>
         {
             public Validator()
@@ -29,7 +27,6 @@ namespace LiMS.API.Models
                     .WithMessage("A book with a borrowed date must be marked as borrowed.")
                     .Equal(false).When(x => !x.BorrowedDate.HasValue)
                     .WithMessage("A book without a borrowed date must not be marked as borrowed.");
-                RuleFor(x => x.Hamzeh).GreaterThan(5);
             }
         }
     }

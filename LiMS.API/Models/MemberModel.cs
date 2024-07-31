@@ -1,6 +1,8 @@
 ﻿using Domain;
 using FluentValidation;
 
+namespace LiMS.API.Models;
+
 public class MemberModel : Member
 {
     public class Validator : AbstractValidator<MemberModel>

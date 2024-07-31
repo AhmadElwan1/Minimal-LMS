@@ -52,8 +52,8 @@ namespace Application
 
         public void BorrowBook(int bookId, int memberId)
         {
-            var book = _bookRepository.GetById(bookId);
-            var member = _memberRepository.GetById(memberId);
+            Book? book = _bookRepository.GetById(bookId);
+            Member? member = _memberRepository.GetById(memberId);
 
             if (book == null)
                 throw new ArgumentException($"No book found with ID {bookId}");
@@ -73,7 +73,7 @@ namespace Application
 
         public void ReturnBook(int bookId)
         {
-            var book = _bookRepository.GetById(bookId);
+            Book? book = _bookRepository.GetById(bookId);
 
             if (book == null)
                 throw new ArgumentException($"No book found with ID {bookId}");
