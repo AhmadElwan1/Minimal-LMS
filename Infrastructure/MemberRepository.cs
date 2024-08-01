@@ -1,38 +1,17 @@
 ﻿using Domain;
-using Newtonsoft.Json;
 
 namespace Infrastructure
 {
-    public class MemberRepository : IRepository<Member>
+    public class MemberRepository(ApplicationDbContext context) : IRepository<Member>
     {
-        private readonly string _membersFile;
-
-        public MemberRepository(string membersFile = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\Infrastructure\\Members.json")
-        {
-            _membersFile = membersFile;
-        }
-
         public List<Member> GetAll()
         {
-            if (!File.Exists(_membersFile))
-                return new List<Member>();
-
-            try
-            {
-                string membersJson = File.ReadAllText(_membersFile);
-                return JsonConvert.DeserializeObject<List<Member>>(membersJson) ?? new List<Member>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file {_membersFile}: {ex.Message}");
-                return new List<Member>();
-            }
+            return context.Members.ToList();
         }
 
         public Member GetById(int id)
         {
-            List<Member> members = GetAll();
-            return members.FirstOrDefault(m => m.MemberID == id);
+            return context.Members.Find(id);
         }
 
         public void Add(Member entity)
@@ -46,15 +25,16 @@ namespace Infrastructure
             if (string.IsNullOrWhiteSpace(entity.Email))
                 throw new ArgumentException("Member email cannot be empty.");
 
-            List<Member> members = GetAll();
-            if (members.Any(m => m.MemberID == entity.MemberID))
+            string emailToCheck = entity.Email.ToLower();
+
+            if (context.Members.Any(m => m.MemberID == entity.MemberID))
                 throw new InvalidOperationException($"A member with ID {entity.MemberID} already exists.");
 
-            if (members.Any(m => string.Equals(m.Email, entity.Email, StringComparison.OrdinalIgnoreCase)))
+            if (context.Members.Any(m => m.Email.ToLower() == emailToCheck))
                 throw new InvalidOperationException($"A member with email '{entity.Email}' already exists.");
 
-            members.Add(entity);
-            SaveChanges(members);
+            context.Members.Add(entity);
+            context.SaveChanges();
         }
 
         public void Update(Member entity)
@@ -68,40 +48,29 @@ namespace Infrastructure
             if (string.IsNullOrWhiteSpace(entity.Email))
                 throw new ArgumentException("Member email cannot be empty.");
 
-            List<Member> members = GetAll();
-            int index = members.FindIndex(m => m.MemberID == entity.MemberID);
-            if (index == -1)
+            Member? existingMember = context.Members.Find(entity.MemberID);
+            if (existingMember == null)
                 throw new KeyNotFoundException($"No member found with ID {entity.MemberID}.");
 
-            if (members.Any(m => m.MemberID != entity.MemberID && string.Equals(m.Email, entity.Email, StringComparison.OrdinalIgnoreCase)))
+            // Ensure the email is in lowercase for a case-insensitive comparison
+            string emailToCheck = entity.Email.ToLower();
+
+            // Check if a member with the same email already exists
+            if (context.Members.Any(m => m.MemberID != entity.MemberID && m.Email.ToLower() == emailToCheck))
                 throw new InvalidOperationException($"A member with email '{entity.Email}' already exists.");
 
-            members[index] = entity;
-            SaveChanges(members);
+            context.Entry(existingMember).CurrentValues.SetValues(entity);
+            context.SaveChanges();
         }
 
         public void Delete(int id)
         {
-            List<Member> members = GetAll();
-            if (!members.Any(m => m.MemberID == id))
+            Member? member = context.Members.Find(id);
+            if (member == null)
                 throw new KeyNotFoundException($"No member found with ID {id}.");
 
-            members.RemoveAll(m => m.MemberID == id);
-            SaveChanges(members);
-        }
-
-        private void SaveChanges(List<Member> members)
-        {
-            try
-            {
-                string membersJson = JsonConvert.SerializeObject(members, Formatting.Indented);
-                File.WriteAllText(_membersFile, membersJson);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error writing file {_membersFile}: {ex.Message}");
-                throw;
-            }
+            context.Members.Remove(member);
+            context.SaveChanges();
         }
     }
 }

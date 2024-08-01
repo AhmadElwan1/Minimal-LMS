@@ -1,7 +1,7 @@
 [
   {
     "BookId": 1,
-    "Title": "Updated",
+    "Title": "Book1",
     "Author": "New Author",
     "IsBorrowed": true,
     "BorrowedDate": "2024-07-31T14:38:02.8019452+03:00",

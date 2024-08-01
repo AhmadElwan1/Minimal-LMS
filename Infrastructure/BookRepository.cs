@@ -1,38 +1,17 @@
 ﻿using Domain;
-using Newtonsoft.Json;
 
 namespace Infrastructure
 {
-    public class BookRepository : IRepository<Book>
+    public class BookRepository(ApplicationDbContext context) : IRepository<Book>
     {
-        private readonly string _booksFile;
-
-        public BookRepository(string booksFile = "C:\\Users\\Ahmad-Elwan\\source\\repos\\LiMS\\Infrastructure\\Books.json")
-        {
-            _booksFile = booksFile;
-        }
-
         public List<Book> GetAll()
         {
-            if (!File.Exists(_booksFile))
-                return new List<Book>();
-
-            try
-            {
-                string booksJson = File.ReadAllText(_booksFile);
-                return JsonConvert.DeserializeObject<List<Book>>(booksJson) ?? new List<Book>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file {_booksFile}: {ex.Message}");
-                return new List<Book>();
-            }
+            return context.Books.ToList();
         }
 
         public Book GetById(int id)
         {
-            List<Book> books = GetAll();
-            return books.FirstOrDefault(b => b.BookId == id);
+            return context.Books.Find(id);
         }
 
         public void Add(Book entity)
@@ -47,14 +26,12 @@ namespace Infrastructure
                 throw new ArgumentException("Book author cannot be empty.");
 
             // Check for duplicate ID
-            List<Book> books = GetAll();
-            if (books.Any(b => b.BookId == entity.BookId))
+            if (context.Books.Any(b => b.BookId == entity.BookId))
                 throw new InvalidOperationException($"A book with ID {entity.BookId} already exists.");
 
-            books.Add(entity);
-            SaveChanges(books);
+            context.Books.Add(entity);
+            context.SaveChanges();
         }
-
 
         public void Update(Book entity)
         {
@@ -67,36 +44,22 @@ namespace Infrastructure
             if (string.IsNullOrWhiteSpace(entity.Author))
                 throw new ArgumentException("Book author cannot be empty.");
 
-            List<Book> books = GetAll();
-            int index = books.FindIndex(b => b.BookId == entity.BookId);
-            if (index == -1)
+            Book? existingBook = context.Books.Find(entity.BookId);
+            if (existingBook == null)
                 throw new KeyNotFoundException($"No book found with ID {entity.BookId}.");
 
-            books[index] = entity;
-            SaveChanges(books);
+            context.Entry(existingBook).CurrentValues.SetValues(entity);
+            context.SaveChanges();
         }
 
         public void Delete(int id)
         {
-            List<Book> books = GetAll();
-            if (!books.Any(b => b.BookId == id))
+            Book? book = context.Books.Find(id);
+            if (book == null)
                 throw new KeyNotFoundException($"No book found with ID {id}.");
 
-            books.RemoveAll(b => b.BookId == id);
-            SaveChanges(books);
-        }
-
-        private void SaveChanges(List<Book> books)
-        {
-            try
-            {
-                string booksJson = JsonConvert.SerializeObject(books, Formatting.Indented);
-                File.WriteAllText(_booksFile, booksJson);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error writing file {_booksFile}: {ex.Message}");
-            }
+            context.Books.Remove(book);
+            context.SaveChanges();
         }
     }
 }
