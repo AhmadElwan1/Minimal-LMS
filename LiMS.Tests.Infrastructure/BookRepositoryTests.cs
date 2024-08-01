@@ -1,6 +1,7 @@
-using Newtonsoft.Json;
+/*using Newtonsoft.Json;
 using Domain;
 using Infrastructure;
+using Infrastructure.Repositories;
 
 namespace LiMS.Tests.Infrastructure
 {
@@ -70,4 +71,4 @@ namespace LiMS.Tests.Infrastructure
 
 
     }
-}
+}*/

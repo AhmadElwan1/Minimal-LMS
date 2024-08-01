@@ -4,15 +4,15 @@ namespace Application
 {
     public class LibraryService
     {
-        private readonly IRepository<Book> _bookRepository;
-        private readonly IRepository<Member> _memberRepository;
+        private readonly IRepository<Book> bookRepository;
+        private readonly IRepository<Member> memberRepository;
 
         public LibraryService(
             IRepository<Book> bookRepository,
             IRepository<Member> memberRepository)
         {
-            _bookRepository = bookRepository;
-            _memberRepository = memberRepository;
+            this.bookRepository = bookRepository;
+            this.memberRepository = memberRepository;
         }
 
         private void AddEntity<T>(IRepository<T> repository, T entity) => repository.Add(entity);
@@ -21,39 +21,39 @@ namespace Application
 
         public void AddBook(Book book)
         {
-            AddEntity(_bookRepository, book);
+            AddEntity(bookRepository, book);
         }
 
         public void UpdateBook(Book book)
         {
-            UpdateEntity(_bookRepository, book);
+            UpdateEntity(bookRepository, book);
         }
 
-        public void DeleteBook(int bookID) => DeleteEntity(_bookRepository, bookID);
-        public List<Book> GetAllBooks() => _bookRepository.GetAll();
-        public Book GetBookById(int bookID) => _bookRepository.GetById(bookID);
+        public void DeleteBook(int bookID) => DeleteEntity(bookRepository, bookID);
+        public List<Book> GetAllBooks() => bookRepository.GetAll();
+        public Book GetBookById(int bookID) => bookRepository.GetById(bookID);
 
         public void AddMember(Member member)
         {
-            AddEntity(_memberRepository, member);
+            AddEntity(memberRepository, member);
         }
 
         public void UpdateMember(Member member)
         {
-            UpdateEntity(_memberRepository, member);
+            UpdateEntity(memberRepository, member);
         }
 
-        public bool BookExists(int bookId) => _bookRepository.GetById(bookId) != null;
-        public bool MemberExists(int memberId) => _memberRepository.GetById(memberId) != null;
+        public bool BookExists(int bookId) => bookRepository.GetById(bookId) != null;
+        public bool MemberExists(int memberId) => memberRepository.GetById(memberId) != null;
 
-        public void DeleteMember(int memberID) => DeleteEntity(_memberRepository, memberID);
-        public List<Member> GetAllMembers() => _memberRepository.GetAll();
-        public Member GetMemberById(int memberID) => _memberRepository.GetById(memberID);
+        public void DeleteMember(int memberID) => DeleteEntity(memberRepository, memberID);
+        public List<Member> GetAllMembers() => memberRepository.GetAll();
+        public Member GetMemberById(int memberID) => memberRepository.GetById(memberID);
 
         public void BorrowBook(int bookId, int memberId)
         {
-            Book? book = _bookRepository.GetById(bookId);
-            Member? member = _memberRepository.GetById(memberId);
+            Book? book = bookRepository.GetById(bookId);
+            Member? member = memberRepository.GetById(memberId);
 
             if (book == null)
                 throw new ArgumentException($"No book found with ID {bookId}");
@@ -65,15 +65,15 @@ namespace Application
                 throw new InvalidOperationException("This book is already borrowed.");
 
             book.IsBorrowed = true;
-            book.BorrowedDate = DateTime.Now;
+            book.BorrowedDate = DateTime.UtcNow; // Set the time to UTC
             book.BorrowedBy = memberId;
 
-            UpdateEntity(_bookRepository, book);
+            UpdateEntity(bookRepository, book);
         }
 
         public void ReturnBook(int bookId)
         {
-            Book? book = _bookRepository.GetById(bookId);
+            Book? book = bookRepository.GetById(bookId);
 
             if (book == null)
                 throw new ArgumentException($"No book found with ID {bookId}");
@@ -82,12 +82,13 @@ namespace Application
                 throw new InvalidOperationException("This book is not currently borrowed.");
 
             book.IsBorrowed = false;
-            book.BorrowedDate = null;
-            book.BorrowedBy = null;
+            book.BorrowedDate = null; // Clear the BorrowedDate
+            book.BorrowedBy = null; // Clear the BorrowedBy reference
 
-            UpdateEntity(_bookRepository, book);
+            UpdateEntity(bookRepository, book);
         }
 
-        public List<Book> GetAllBorrowedBooks() => _bookRepository.GetAll().Where(b => b.IsBorrowed).ToList();
+
+        public List<Book> GetAllBorrowedBooks() => bookRepository.GetAll().Where(b => b.IsBorrowed).ToList();
     }
 }

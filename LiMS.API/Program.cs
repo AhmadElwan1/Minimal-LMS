@@ -5,12 +5,15 @@ using Infrastructure;
 using LiMS.API.Middlewares;
 using LiMS.API.Models;
 using LiMS.API.Routes;
+using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Register services
-builder.Services.AddSingleton<IRepository<Book>, BookRepository>();
-builder.Services.AddSingleton<IRepository<Member>, MemberRepository>();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IRepository<Book>, BookRepository>();
+builder.Services.AddScoped<IRepository<Member>, MemberRepository>();
 builder.Services.AddScoped<LibraryService>();
 
 builder.Services.AddFluentValidation(fv =>
@@ -25,14 +28,10 @@ builder.Services.AddSwaggerGen();
 
 WebApplication app = builder.Build();
 
-// Register custom exception middleware
-app.UseMiddleware<CustomExceptionMiddleware>();
-
-// Swagger setup
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseMiddleware<CustomExceptionMiddleware>();
 
-// Map routes
 app.MapBookRoutes();
 app.MapMemberRoutes();
 app.MapBorrowRoutes();

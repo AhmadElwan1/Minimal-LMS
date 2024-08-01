@@ -1,9 +1,8 @@
 ﻿using Application;
 using Domain;
 using Domain.DTOs;
-using FluentValidation;
-using FluentValidation.Results;
 using LiMS.API.Models;
+using FluentValidation.Results;
 
 namespace LiMS.API.Routes
 {
@@ -11,6 +10,9 @@ namespace LiMS.API.Routes
     {
         public static void MapBookRoutes(this WebApplication app)
         {
+            BookModel.Validator bookValidator = new BookModel.Validator();
+
+            // GET /books - Retrieve all books
             app.MapGet("/books", (LibraryService libraryService) =>
             {
                 try
@@ -30,15 +32,21 @@ namespace LiMS.API.Routes
                 }
                 catch (Exception ex)
                 {
-                    // Log and handle the exception
                     Console.WriteLine($"Error retrieving books: {ex.Message}");
                     return Results.Problem("An error occurred while retrieving books.");
                 }
-            })
-            .WithTags("Books");
+            }).WithTags("Books");
 
-            app.MapPost("/books", (BookModel bookModel, LibraryService libraryService, IValidator<BookModel> validator) =>
+            // POST /books - Create a new book
+            app.MapPost("/books", (BookModel bookModel, LibraryService libraryService) =>
             {
+                ValidationResult validationResult = bookValidator.Validate(bookModel);
+
+                if (!validationResult.IsValid)
+                {
+                    return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                }
+
                 try
                 {
                     if (bookModel == null)
@@ -46,50 +54,49 @@ namespace LiMS.API.Routes
                         return Results.BadRequest(new { Error = "Invalid request payload." });
                     }
 
-                    ValidationResult validationResult = validator.Validate(bookModel);
-                    if (!validationResult.IsValid)
-                    {
-                        return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
-                    }
-
                     Book book = new Book
                     {
-                        BookId = bookModel.BookId,
                         Title = bookModel.Title,
                         Author = bookModel.Author,
                         IsBorrowed = bookModel.IsBorrowed,
                         BorrowedDate = bookModel.BorrowedDate,
                         BorrowedBy = bookModel.BorrowedBy
                     };
+
                     libraryService.AddBook(book);
-                    return Results.Created($"/books/{book.BookId}", bookModel);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return Results.BadRequest(new { Error = "Type mismatch or invalid operation: " + ex.Message });
+                    // Return the created book with the assigned BookId
+                    return Results.Created($"/books/{book.BookId}", new BookModel
+                    {
+                        BookId = book.BookId,
+                        Title = book.Title,
+                        Author = book.Author,
+                        IsBorrowed = book.IsBorrowed,
+                        BorrowedDate = book.BorrowedDate,
+                        BorrowedBy = book.BorrowedBy
+                    });
                 }
                 catch (Exception ex)
                 {
-                    // Log and handle the exception
                     Console.WriteLine($"Error adding book: {ex.Message}");
                     return Results.Problem("An error occurred while adding the book.");
                 }
-            })
-            .WithTags("Books");
+            }).WithTags("Books");
 
-            app.MapPut("/books/{id}", (int id, BookModel bookModel, LibraryService libraryService, IValidator<BookModel> validator) =>
+            // PUT /books/{id} - Update an existing book
+            app.MapPut("/books/{id}", (int id, BookModel bookModel, LibraryService libraryService) =>
             {
+                ValidationResult validationResult = bookValidator.Validate(bookModel);
+
+                if (!validationResult.IsValid)
+                {
+                    return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                }
+
                 try
                 {
                     if (bookModel == null)
                     {
                         return Results.BadRequest(new { Error = "Invalid request payload." });
-                    }
-
-                    ValidationResult validationResult = validator.Validate(bookModel);
-                    if (!validationResult.IsValid)
-                    {
-                        return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
                     }
 
                     if (id != bookModel.BookId)
@@ -103,32 +110,23 @@ namespace LiMS.API.Routes
                         return Results.NotFound(new { Error = "Book not found." });
                     }
 
-                    Book updatedBook = new Book
-                    {
-                        BookId = bookModel.BookId,
-                        Title = bookModel.Title,
-                        Author = bookModel.Author,
-                        IsBorrowed = bookModel.IsBorrowed,
-                        BorrowedDate = bookModel.BorrowedDate,
-                        BorrowedBy = bookModel.BorrowedBy
-                    };
+                    existingBook.Title = bookModel.Title;
+                    existingBook.Author = bookModel.Author;
+                    existingBook.IsBorrowed = bookModel.IsBorrowed;
+                    existingBook.BorrowedDate = bookModel.BorrowedDate;
+                    existingBook.BorrowedBy = bookModel.BorrowedBy;
 
-                    libraryService.UpdateBook(updatedBook);
-                    return Results.NoContent();
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return Results.BadRequest(new { Error = "Type mismatch or invalid operation: " + ex.Message });
+                    libraryService.UpdateBook(existingBook);
+                    return Results.Ok(new { Message = "Book updated successfully!" });
                 }
                 catch (Exception ex)
                 {
-                    // Log and handle the exception
                     Console.WriteLine($"Error updating book with ID {id}: {ex.Message}");
                     return Results.Problem("An error occurred while updating the book.");
                 }
-            })
-            .WithTags("Books");
+            }).WithTags("Books");
 
+            // DELETE /books/{id} - Delete a book
             app.MapDelete("/books/{id}", (int id, LibraryService libraryService) =>
             {
                 try
@@ -142,20 +140,15 @@ namespace LiMS.API.Routes
                     libraryService.DeleteBook(id);
                     return Results.Ok(new { Message = "Book deleted successfully!" });
                 }
-                catch (InvalidOperationException ex)
-                {
-                    return Results.Conflict(new { Error = "Invalid operation: " + ex.Message });
-                }
                 catch (Exception ex)
                 {
-                    // Log and handle the exception
                     Console.WriteLine($"Error deleting book with ID {id}: {ex.Message}");
                     return Results.Problem("An error occurred while deleting the book.");
                 }
-            })
-            .WithTags("Books");
+            }).WithTags("Books");
 
-            app.MapPatch("/books/{id}", (int id, BookUpdateDto updateDto, LibraryService libraryService, IValidator<BookModel> validator) =>
+            // PATCH /books/{id} - Partially update a book
+            app.MapPatch("/books/{id}", (int id, BookUpdateDto updateDto, LibraryService libraryService) =>
             {
                 try
                 {
@@ -185,36 +178,15 @@ namespace LiMS.API.Routes
                     if (updateDto.BorrowedBy.HasValue)
                         existingBook.BorrowedBy = updateDto.BorrowedBy.Value;
 
-                    ValidationResult validationResult = validator.Validate(new BookModel
-                    {
-                        BookId = existingBook.BookId,
-                        Title = existingBook.Title,
-                        Author = existingBook.Author,
-                        IsBorrowed = existingBook.IsBorrowed,
-                        BorrowedDate = existingBook.BorrowedDate,
-                        BorrowedBy = existingBook.BorrowedBy
-                    });
-
-                    if (!validationResult.IsValid)
-                    {
-                        return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
-                    }
-
                     libraryService.UpdateBook(existingBook);
-                    return Results.NoContent();
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return Results.BadRequest(new { Error = "Type mismatch or invalid operation: " + ex.Message });
+                    return Results.Ok(new { Message = "Book updated successfully!" });
                 }
                 catch (Exception ex)
                 {
-                    // Log and handle the exception
                     Console.WriteLine($"Error updating book with ID {id}: {ex.Message}");
                     return Results.Problem("An error occurred while updating the book.");
                 }
-            })
-            .WithTags("Books");
+            }).WithTags("Books");
         }
     }
 }

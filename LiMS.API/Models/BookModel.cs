@@ -9,9 +9,6 @@ namespace LiMS.API.Models
         {
             public Validator()
             {
-                RuleFor(x => x.BookId)
-                    .GreaterThan(0).WithMessage("Book ID must be greater than 0.");
-
                 RuleFor(x => x.Title)
                     .NotEmpty().WithMessage("Title is required.");
 

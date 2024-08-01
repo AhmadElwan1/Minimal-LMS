@@ -1,23 +1,21 @@
 ﻿using Domain;
 using FluentValidation;
 
-namespace LiMS.API.Models;
-
-public class MemberModel : Member
+namespace LiMS.API.Models
 {
-    public class Validator : AbstractValidator<MemberModel>
+    public class MemberModel : Member
     {
-        public Validator()
+        public class Validator : AbstractValidator<MemberModel>
         {
-            RuleFor(x => x.MemberID)
-                .GreaterThan(0).WithMessage("Member ID must be greater than 0.");
+            public Validator()
+            {
+                RuleFor(x => x.Name)
+                    .NotEmpty().WithMessage("Name is required.");
 
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Name is required.");
-
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Email is not valid.");
+                RuleFor(x => x.Email)
+                    .NotEmpty().WithMessage("Email is required.")
+                    .EmailAddress().WithMessage("Email is not valid.");
+            }
         }
     }
 }

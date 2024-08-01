@@ -1,160 +1,194 @@
 ﻿using Application;
 using Domain;
 using Domain.DTOs;
-using FluentValidation.Results;
 using LiMS.API.Models;
+using FluentValidation.Results;
 
-public static class MembersRoutes
+namespace LiMS.API.Routes
 {
-    public static void MapMemberRoutes(this WebApplication app)
+    public static class MembersRoutes
     {
-        app.MapGet("/members", (LibraryService libraryService) =>
+        public static void MapMemberRoutes(this WebApplication app)
         {
-            try
+            MemberModel.Validator memberValidator = new MemberModel.Validator();
+
+            app.MapGet("/members", (LibraryService libraryService) =>
             {
-                List<Member> members = libraryService.GetAllMembers();
-                List<MemberModel> memberModels = members.Select(m => new MemberModel
+                try
                 {
-                    MemberID = m.MemberID,
-                    Name = m.Name,
-                    Email = m.Email
-                }).ToList();
+                    List<Member> members = libraryService.GetAllMembers();
+                    List<MemberModel> memberModels = members.Select(m => new MemberModel
+                    {
+                        MemberID = m.MemberID,
+                        Name = m.Name,
+                        Email = m.Email,
+                    }).ToList();
 
-                return Results.Ok(memberModels);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error retrieving members: {ex.Message}");
-                return Results.Problem("An error occurred while retrieving members.");
-            }
-        }).WithTags("Members");
-
-        app.MapPost("/members", (MemberModel memberModel, LibraryService libraryService) =>
-        {
-            MemberModel.Validator validator = new MemberModel.Validator();
-
-            ValidationResult validationResult = validator.Validate(memberModel);
-            if (!validationResult.IsValid)
-                return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
-
-            try
-            {
-                Member member = new Member
+                    return Results.Ok(memberModels);
+                }
+                catch (Exception ex)
                 {
-                    MemberID = memberModel.MemberID,
-                    Name = memberModel.Name,
-                    Email = memberModel.Email
-                };
+                    Console.WriteLine($"Error retrieving members: {ex.Message}");
+                    return Results.Problem("An error occurred while retrieving members.");
+                }
+            }).WithTags("Members");
 
-                libraryService.AddMember(member);
-                return Results.Created($"/members/{member.MemberID}", memberModel);
-            }
-            catch (InvalidOperationException ex)
+            app.MapPost("/members", (MemberModel memberModel, LibraryService libraryService) =>
             {
-                return Results.Conflict(new { Error = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { Error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error adding member: {ex.Message}");
-                return Results.Problem("An error occurred while adding the member.");
-            }
-        }).WithTags("Members");
+                ValidationResult validationResult = memberValidator.Validate(memberModel);
 
-        app.MapPut("/members/{id}", (int id, MemberModel memberModel, LibraryService libraryService) =>
-        {
-            MemberModel.Validator validator = new MemberModel.Validator();
+                if (!validationResult.IsValid)
+                {
+                    return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                }
 
-            ValidationResult validationResult = validator.Validate(memberModel);
-            if (!validationResult.IsValid)
-                return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                try
+                {
+                    if (memberModel == null)
+                    {
+                        return Results.BadRequest(new { Error = "Invalid request payload." });
+                    }
 
-            try
-            {
-                if (id != memberModel.MemberID)
-                    return Results.BadRequest(new { Error = "Member ID mismatch." });
+                    Member member = new Member
+                    {
+                        Name = memberModel.Name,
+                        Email = memberModel.Email,
+                    };
 
-                Member existingMember = libraryService.GetMemberById(id);
-                if (existingMember == null)
-                    return Results.NotFound(new { Error = "Member not found." });
+                    libraryService.AddMember(member);
 
-                existingMember.Name = memberModel.Name;
-                existingMember.Email = memberModel.Email;
+                    return Results.Created($"/members/{member.MemberID}", new MemberModel
+                    {
+                        MemberID = member.MemberID,
+                        Name = member.Name,
+                        Email = member.Email,
+                    });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(new { Error = ex.Message });
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { Error = ex.Message });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error adding member: {ex.Message}");
+                    return Results.Problem("An error occurred while adding the member.");
+                }
+            }).WithTags("Members");
 
-                libraryService.UpdateMember(existingMember);
-                return Results.NoContent();
-            }
-            catch (ArgumentException ex)
+            app.MapPut("/members/{id}", (int id, MemberModel memberModel, LibraryService libraryService) =>
             {
-                return Results.BadRequest(new { Error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { Error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
-                return Results.Problem("An error occurred while updating the member.");
-            }
-        }).WithTags("Members");
+                ValidationResult validationResult = memberValidator.Validate(memberModel);
 
-        app.MapDelete("/members/{id}", (int id, LibraryService libraryService) =>
-        {
-            try
-            {
-                Member member = libraryService.GetMemberById(id);
-                if (member == null)
-                    return Results.NotFound(new { Error = "Member not found." });
+                if (!validationResult.IsValid)
+                {
+                    return Results.BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                }
 
-                libraryService.DeleteMember(id);
-                return Results.Ok(new { Message = "Member deleted successfully!" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { Error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error deleting member with ID {id}: {ex.Message}");
-                return Results.Problem("An error occurred while deleting the member.");
-            }
-        }).WithTags("Members");
+                try
+                {
+                    if (memberModel == null)
+                    {
+                        return Results.BadRequest(new { Error = "Invalid request payload." });
+                    }
 
-        // PATCH route
-        app.MapPatch("/members/{id}", (int id, MemberUpdateDto updateDto, LibraryService libraryService) =>
-        {
-            try
-            {
-                Member existingMember = libraryService.GetMemberById(id);
-                if (existingMember == null)
-                    return Results.NotFound(new { Error = "Member not found." });
+                    if (id != memberModel.MemberID)
+                    {
+                        return Results.BadRequest(new { Error = "Member ID mismatch." });
+                    }
 
-                if (updateDto.Name != null)
-                    existingMember.Name = updateDto.Name;
+                    Member existingMember = libraryService.GetMemberById(id);
+                    if (existingMember == null)
+                    {
+                        return Results.NotFound(new { Error = "Member not found." });
+                    }
 
-                if (updateDto.Email != null)
-                    existingMember.Email = updateDto.Email;
+                    existingMember.Name = memberModel.Name;
+                    existingMember.Email = memberModel.Email;
 
-                libraryService.UpdateMember(existingMember);
-                return Results.NoContent();
-            }
-            catch (ArgumentException ex)
+                    libraryService.UpdateMember(existingMember);
+                    return Results.Ok(new { Message = "Book updated successfully!" });
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { Error = ex.Message });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(new { Error = ex.Message });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
+                    return Results.Problem("An error occurred while updating the member.");
+                }
+            }).WithTags("Members");
+
+            app.MapDelete("/members/{id}", (int id, LibraryService libraryService) =>
             {
-                return Results.BadRequest(new { Error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
+                try
+                {
+                    Member member = libraryService.GetMemberById(id);
+                    if (member == null)
+                    {
+                        return Results.NotFound(new { Error = "Member not found." });
+                    }
+
+                    libraryService.DeleteMember(id);
+                    return Results.Ok(new { Message = "Member deleted successfully!" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(new { Error = ex.Message });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deleting member with ID {id}: {ex.Message}");
+                    return Results.Problem("An error occurred while deleting the member.");
+                }
+            }).WithTags("Members");
+
+            app.MapPatch("/members/{id}", (int id, MemberUpdateDto updateDto, LibraryService libraryService) =>
             {
-                return Results.Conflict(new { Error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
-                return Results.Problem("An error occurred while updating the member.");
-            }
-        }).WithTags("Members");
+                try
+                {
+                    if (updateDto == null)
+                    {
+                        return Results.BadRequest(new { Error = "Invalid request payload." });
+                    }
+
+                    Member existingMember = libraryService.GetMemberById(id);
+                    if (existingMember == null)
+                    {
+                        return Results.NotFound(new { Error = "Member not found." });
+                    }
+
+                    if (updateDto.Name != null)
+                        existingMember.Name = updateDto.Name;
+
+                    if (updateDto.Email != null)
+                        existingMember.Email = updateDto.Email;
+
+                    libraryService.UpdateMember(existingMember);
+                    return Results.Ok(new { Message = "Book updated successfully!" });
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { Error = ex.Message });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(new { Error = ex.Message });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error updating member with ID {id}: {ex.Message}");
+                    return Results.Problem("An error occurred while updating the member.");
+                }
+            }).WithTags("Members");
+        }
     }
 }

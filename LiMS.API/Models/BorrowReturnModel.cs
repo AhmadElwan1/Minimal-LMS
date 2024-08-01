@@ -12,10 +12,10 @@ namespace LiMS.API.Models
             public Validator()
             {
                 RuleFor(x => x.BookId)
-                    .GreaterThan(0).WithMessage("Invalid Book ID.");
+                    .NotEmpty().WithMessage("Book ID is required.");
 
                 RuleFor(x => x.MemberId)
-                    .GreaterThan(0).WithMessage("Invalid Member ID");
+                    .NotEmpty().WithMessage("Member ID is required.");
             }
         }
     }

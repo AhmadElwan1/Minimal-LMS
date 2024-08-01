@@ -22,6 +22,10 @@ namespace Infrastructure
                 .HasForeignKey(b => b.BorrowedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Book>()
+                .Property(b => b.BorrowedDate)
+                .HasColumnType("timestamp with time zone");
+
             modelBuilder.Entity<Member>()
                 .Property(m => m.MemberID)
                 .ValueGeneratedOnAdd();
